@@ -1,0 +1,54 @@
+[gd_scene load_steps=7 format=3 uid="uid://plugw7myjjog"]
+
+[ext_resource type="Script" path="res://Seeker.cs" id="1_ce0go"]
+[ext_resource type="Texture2D" uid="uid://dmwo5lpissgws" path="res://art/playerGrey_up2.png" id="1_ehxuw"]
+[ext_resource type="Texture2D" uid="uid://c2uev4fa17t1l" path="res://art/playerGrey_up1.png" id="2_lbf6d"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_81865"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_ehxuw")
+}],
+"loop": true,
+"name": &"crouch",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_lbf6d")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 5.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_frep2"]
+radius = 55.0
+height = 136.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_futsb"]
+radius = 150.0
+
+[node name="Seeker" type="CharacterBody2D"]
+script = ExtResource("1_ce0go")
+metadata/_edit_group_ = true
+
+[node name="SeekerSprite" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_81865")
+animation = &"walk"
+
+[node name="SeekerCollision" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_frep2")
+
+[node name="SeekerLOSArea" type="Area2D" parent="."]
+
+[node name="SeekerLOSRayCast" type="RayCast2D" parent="SeekerLOSArea"]
+target_position = Vector2(192, 0)
+
+[node name="SeekerLOSCollision" type="CollisionShape2D" parent="SeekerLOSArea"]
+shape = SubResource("CircleShape2D_futsb")
+debug_color = Color(0.611765, 0.509804, 0.47451, 0.419608)
+
+[connection signal="area_entered" from="SeekerLOSArea" to="." method="OnSeekerLOSAreaEntered"]
+[connection signal="area_exited" from="SeekerLOSArea" to="." method="OnSeekerLOSAreaExited"]

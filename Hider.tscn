@@ -1,0 +1,56 @@
+[gd_scene load_steps=8 format=3 uid="uid://ce2lfwyy1unmy"]
+
+[ext_resource type="Script" path="res://Hider.cs" id="1_li8y4"]
+[ext_resource type="Texture2D" uid="uid://dmwo5lpissgws" path="res://art/playerGrey_up2.png" id="2_rdsff"]
+[ext_resource type="Texture2D" uid="uid://c2uev4fa17t1l" path="res://art/playerGrey_up1.png" id="3_cw7vs"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_81865"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_rdsff")
+}],
+"loop": true,
+"name": &"crouch",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_cw7vs")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 5.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_frep2"]
+radius = 55.0
+height = 136.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_futsb"]
+radius = 150.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_gfq0k"]
+radius = 68.4471
+
+[node name="Hider" type="CharacterBody2D"]
+script = ExtResource("1_li8y4")
+metadata/_edit_group_ = true
+
+[node name="HiderSprite" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_81865")
+animation = &"walk"
+
+[node name="HiderCollision" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_frep2")
+
+[node name="HiderLOSArea" type="Area2D" parent="."]
+
+[node name="HiderLOSCollision" type="CollisionShape2D" parent="HiderLOSArea"]
+shape = SubResource("CircleShape2D_futsb")
+debug_color = Color(0.611765, 0.509804, 0.47451, 0.419608)
+
+[node name="HiderHidingArea" type="Area2D" parent="."]
+
+[node name="HiderHidingCollision" type="CollisionShape2D" parent="HiderHidingArea"]
+shape = SubResource("CircleShape2D_gfq0k")

@@ -1,0 +1,81 @@
+[gd_scene load_steps=8 format=3 uid="uid://0qd26hmxql40"]
+
+[ext_resource type="Script" path="res://Player/Player.cs" id="1_26ey4"]
+[ext_resource type="Texture2D" uid="uid://dmwo5lpissgws" path="res://art/playerGrey_up2.png" id="1_s2mnr"]
+[ext_resource type="Texture2D" uid="uid://c2uev4fa17t1l" path="res://art/playerGrey_up1.png" id="2_ddahd"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_sd7fr"]
+properties/0/path = NodePath(".:syncPosition")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:Crouched")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_wqxvc"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_s2mnr")
+}],
+"loop": true,
+"name": &"crouch",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_ddahd")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 5.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_72ggd"]
+radius = 13.5
+height = 27.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_h7g67"]
+radius = 16.5
+height = 33.0
+
+[node name="Player" type="CharacterBody2D"]
+script = ExtResource("1_26ey4")
+DetectRadius = 1000
+ForceCrouched = true
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_sd7fr")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, 9.53674e-07)
+scale = Vector2(0.25, 0.25)
+sprite_frames = SubResource("SpriteFrames_wqxvc")
+animation = &"crouch"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0.2, -1.5)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_72ggd")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 128
+collision_mask = 128
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(0.2, -1.5)
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_h7g67")
+
+[node name="Visibility" type="Area2D" parent="."]
+
+[node name="RayCast2D" type="RayCast2D" parent="Visibility"]
+target_position = Vector2(0, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Visibility"]
+debug_color = Color(1, 0, 0.054902, 0.419608)
+
+[connection signal="body_entered" from="Area2D" to="." method="OnEnteringHidingPlace"]
+[connection signal="body_exited" from="Area2D" to="." method="OnLeavingHidingPlace"]
+[connection signal="body_entered" from="Visibility" to="." method="OnVisibilityBodyEntered"]
+[connection signal="body_exited" from="Visibility" to="." method="OnVisibilityBodyExited"]
