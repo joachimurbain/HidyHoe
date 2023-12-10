@@ -1,0 +1,35 @@
+[gd_scene load_steps=4 format=3 uid="uid://b1x218qdi7i0c"]
+
+[ext_resource type="Script" path="res://HUD.cs" id="1_ibxwf"]
+[ext_resource type="FontFile" uid="uid://12magxlav4r2" path="res://fonts/Xolonium-Regular.ttf" id="2_ww3bg"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_han8c"]
+font = ExtResource("2_ww3bg")
+font_size = 32
+outline_size = 3
+outline_color = Color(0, 0, 0, 1)
+shadow_size = 3
+shadow_color = Color(0, 0, 0, 0.843137)
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_ibxwf")
+
+[node name="Message" type="Label" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -80.5
+offset_top = -19.5
+offset_right = 80.5
+offset_bottom = 19.5
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_han8c")
+
+[node name="MessageTimer" type="Timer" parent="."]
+wait_time = 3.0
+autostart = true
+
+[connection signal="timeout" from="MessageTimer" to="." method="OnMessageTimerTimeout"]

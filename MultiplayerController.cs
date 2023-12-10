@@ -22,13 +22,13 @@ public partial class MultiplayerController : Control
 		Multiplayer.ConnectionFailed += ConnectionFailed;
 		if (OS.GetCmdlineArgs().Contains("--server"))
 		{
-			HostGame();
+			CallDeferred(nameof(HostGame));
 		}
 	}
 
 	private void HostGame()
 	{
-		Error error = peer.CreateServer(Port, 2);
+		Error error = peer.CreateServer(Port);
 		if (error != Error.Ok)
 		{
 			GD.Print($"ERROR CANNOT HOST! : {error.ToString()}");
@@ -36,13 +36,9 @@ public partial class MultiplayerController : Control
 		}
 		peer.Host.Compress(ENetConnection.CompressionMode.RangeCoder);
 		Multiplayer.MultiplayerPeer = peer;
-		GD.Print("Waiting For Players!");
+		StartGame();
 	}
 
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
-	public override void _Process(double delta)
-	{
-	}
 
 	private void PeerConnected(long id)
 	{
@@ -109,6 +105,7 @@ public partial class MultiplayerController : Control
 		Node scene = ResourceLoader.Load<PackedScene>("res://Main.tscn").Instantiate<Node>();
 		GetTree().Root.AddChild(scene);
 		this.Hide();
+		GetTree().Paused = false;
 	}
 
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
