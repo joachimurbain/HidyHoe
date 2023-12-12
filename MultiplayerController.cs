@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public partial class MultiplayerController : Control
+public partial class MultiplayerController : Node
 {
 
 	[Export]
@@ -16,8 +16,8 @@ public partial class MultiplayerController : Control
 	private ENetConnection.CompressionMode compressionMode = ENetConnection.CompressionMode.RangeCoder;
 	public override void _Ready()
 	{
-		Multiplayer.PeerConnected += PeerConnected;
-		Multiplayer.PeerDisconnected += PeerDisconnected;
+		//Multiplayer.PeerConnected += PeerConnected;
+		//Multiplayer.PeerDisconnected += PeerDisconnected;
 		Multiplayer.ConnectedToServer += ConnectedToServer;
 		Multiplayer.ConnectionFailed += ConnectionFailed;
 		if (OS.GetCmdlineArgs().Contains("--server"))
@@ -36,7 +36,6 @@ public partial class MultiplayerController : Control
 		}
 		peer.Host.Compress(ENetConnection.CompressionMode.RangeCoder);
 		Multiplayer.MultiplayerPeer = peer;
-		StartGame();
 	}
 
 
@@ -71,12 +70,12 @@ public partial class MultiplayerController : Control
 	{
 		
 		GD.Print("Connected to Server!");
-		RpcId(1,nameof(SendPlayerInformation), GetNode<LineEdit>("VBoxContainer/LineEdit").Text, Multiplayer.GetUniqueId());
+		//RpcId(1,nameof(SendPlayerInformation), GetNode<LineEdit>("VBoxContainer/LineEdit").Text, Multiplayer.GetUniqueId());
 	}
 
 	public void OnHostButtonDown() {
 		HostGame();
-		SendPlayerInformation(GetNode<LineEdit>("VBoxContainer/LineEdit").Text, 1);
+		//SendPlayerInformation(GetNode<LineEdit>("VBoxContainer/LineEdit").Text, 1);
 	}
 
 	public void OnJoinButtonDown()
@@ -86,47 +85,62 @@ public partial class MultiplayerController : Control
 		peer.Host.Compress(ENetConnection.CompressionMode.RangeCoder);
 		Multiplayer.MultiplayerPeer = peer;
 		GD.Print("Joining Game!");
-
+		StartGame();
 	}
 
 	public void OnStartGameButtonDown()
 	{
-		Rpc(nameof(StartGame));
-		//Rpc("StartGame");
+		StartGame();
 	}
 
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer,CallLocal =true,TransferMode =MultiplayerPeer.TransferModeEnum.Reliable)]
 	private void StartGame()
 	{
-		foreach(PlayerInfo player in GameManager.Players)
-		{
-			GD.Print($"{player.Name} is playing");
-		}
-		Node scene = ResourceLoader.Load<PackedScene>("res://Main.tscn").Instantiate<Node>();
-		GetTree().Root.AddChild(scene);
-		this.Hide();
-		GetTree().Paused = false;
-	}
+		//foreach(PlayerInfo player in GameManager.Players)
+		//{
+		//	GD.Print($"{player.Name} is playing");
+		//}
 
-	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
-	private void SendPlayerInformation(string name,int id)
-	{
-		PlayerInfo playerInfo = new PlayerInfo()
-		{
-			Name = name,
-			Id = id
-		};
-		if (!GameManager.Players.Contains(playerInfo)){
-			GameManager.Players.Add(playerInfo);
-		}
+		GetNode<Control>("Multiplayer Controller").Hide();
+		GetTree().Paused = false;
 
 		if (Multiplayer.IsServer())
 		{
-			foreach(PlayerInfo player  in GameManager.Players)
-			{
-				Rpc(nameof(SendPlayerInformation),player.Name,player.Id);
-			}
+			CallDeferred(nameof(ChangeLevel), ResourceLoader.Load<PackedScene>("res://Level.tscn"));
 		}
-
 	}
+
+	//[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
+	//private void SendPlayerInformation(string name,int id)
+	//{
+	//	PlayerInfo playerInfo = new PlayerInfo()
+	//	{
+	//		Name = name,
+	//		Id = id
+	//	};
+	//	if (!GameManager.Players.Contains(playerInfo)){
+	//		GameManager.Players.Add(playerInfo);
+	//	}
+
+	//	if (Multiplayer.IsServer())
+	//	{
+	//		foreach(PlayerInfo player  in GameManager.Players)
+	//		{
+	//			Rpc(nameof(SendPlayerInformation),player.Name,player.Id);
+	//		}
+	//	}
+
+	//}
+
+	private void ChangeLevel(PackedScene scene)
+	{
+		Node level = GetNode("Level");
+		foreach(Node child in level.GetChildren())
+		{
+			level.RemoveChild(child);
+			child.QueueFree();
+		}
+		level.AddChild(scene.Instantiate());
+	}
+
 }

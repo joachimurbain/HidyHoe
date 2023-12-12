@@ -17,19 +17,20 @@ public partial class PlayerInput : MultiplayerSynchronizer
 	public override void _Process(double delta)
 	{
 		Direction = Input.GetVector("left", "right", "up", "down");
-		if (Input.IsActionJustPressed("crouch"))
-		{
-			Rpc(nameof(Crouch));
-		}
+		//if (Input.IsActionJustPressed("crouch"))
+		//{
+		//	Rpc(nameof(Crouch),Input.IsActionPressed("crouch")) ;
+		//}
+		Rpc(nameof(Crouch), Input.IsActionPressed("crouch"));
 
 
 
 	}
 
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
-	public void Crouch()
+	public void Crouch(bool crouching)
 	{
-		Crouching=true;
+		Crouching=crouching;
 	}
 
 }

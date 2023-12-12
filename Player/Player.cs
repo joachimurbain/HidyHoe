@@ -1,14 +1,34 @@
 using Godot;
 using System;
+using System.Data;
+
+
 
 public partial class Player : CharacterBody2D
 {
+
+	public enum PlayerRole
+	{
+		None,
+		Seeker,
+		Hider
+	}
+
 	[Export]
 	public float SpottedDelay = 3.0f;
 	[Export]
 	public float Friction = 0.5f;
 	[Export]
 	public int MovementSpeed = 200;
+	[Export]
+	public PlayerRole Role = PlayerRole.None;
+	[Export]
+	public bool IsVisible = true;
+	[Export]
+	public bool IsSpotted = false;
+	[Export]
+	public bool IsCrouching = false;
+	
 
 	[Export]
 	public int PlayerId { get=>_player; set {
@@ -20,40 +40,51 @@ public partial class Player : CharacterBody2D
 
 
 
-
-
-	private bool Crouched = false;
-	private bool IsSpotted = false;
-	private Vector2 syncPosition;
+	private PlayerInput input;
 	private int boxContact = 0;
+
 
 
 	public override void _Ready()
 	{
-		SetMultiplayerAuthority();
+		input = GetNode<PlayerInput>("PlayerInput");
 	}
 
-	private void SetMultiplayerAuthority()
-	{
-		GetNode<MultiplayerSynchronizer>("MultiplayerSynchronizer").SetMultiplayerAuthority(int.Parse(this.Name));
-	}
 
-	public bool IsCurrentPlayer()
-	{
-		return GetNode<MultiplayerSynchronizer>("MultiplayerSynchronizer").GetMultiplayerAuthority() == Multiplayer.GetUniqueId();
-	}
 
 	public override void _Process(double delta)
 	{
-		if (IsCurrentPlayer())
+		SetVision();
+
+		//if (Multiplayer.GetUniqueId() == PlayerId) { 
+		//}
+		IsVisible = !(IsCrouching && IsAgainstObstacle() && !IsSpotted);
+
+		Rpc(nameof(SetVisibility));
+
+		//if (!IsVisible)
+		//{
+		//	Hide();
+		//}
+		//else
+		//{
+		//	Show();
+		//}
+
+	}
+
+	private void SetVision()
+	{
+		if (Multiplayer.IsServer())
 		{
-			foreach (Player player in GetTree().GetNodesInGroup("Players"))
+			var players = GetTree().GetNodesInGroup("Players");
+			foreach (Player player in players)
 			{
-				if (player.Name == this.Name)
+				bool spotted = false;
+				if (this.Name == player.Name || this.Role == player.Role)
 				{
 					continue;
 				}
-
 				RayCast2D rayCast = GetNodeOrNull<RayCast2D>("Raycast_" + player.Name);
 				if (rayCast == null)
 				{
@@ -68,54 +99,39 @@ public partial class Player : CharacterBody2D
 
 				if (HasClearLineOfSight(rayCast))
 				{
-					Rpc(nameof(Spotted), player.Name);
+					Spotted(player);
+					spotted = true;
 				}
-
-
-
+				if (!spotted)// TMP FIX => delayed ispotted reset is causing issues. replace scene timer with real timer and reset timer if spotted could be a fix
+				{
+					IsSpotted = false;
+				}
 			}
 		}
-		SetCrouchState();
 	}
 
 
-	private void SetCrouchState()
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+	private void SetVisibility()
 	{
-		bool isHidden;
-		string animation;
 		Color modulateColor = Modulate;
-		if (Crouched && IsAgainstObstacle() && !IsSpotted)
+		Player clientContext = GetParent().GetNode<Player>(Multiplayer.GetUniqueId().ToString());
+		if (clientContext.Role == this.Role && !IsVisible)
 		{
-			animation = "crouch";
 			modulateColor.A = 0.5f;
-			isHidden = true;
+			Modulate = modulateColor;
 		}
-		else if (Crouched)
+		else if (!IsVisible)
 		{
-			animation = "crouch";
-			modulateColor.A = 1f;
-			isHidden = false;
-		}
-		else
-		{
-			animation = "walk";
-			modulateColor.A = 1f;
-			isHidden = false;
-		}
-
-		//var tween = GetTree().CreateTween();
-
-		SetAnimation(animation);
-		if (IsCurrentPlayer())
-		{
-			//tween.TweenProperty(this, "modulate", modulateColor, 2);
+			modulateColor.A = 0.0f;
 			Modulate = modulateColor;
 		}
 		else
 		{
-			//tween.TweenProperty(this, "visible", !isHidden, 2);
-			Visible = !isHidden;
+			modulateColor.A = 1.0f;
+			Modulate = modulateColor;
 		}
+		//TODO TWEEN THIS SHIT UP
 	}
 
 	private bool HasClearLineOfSight(RayCast2D rayCast)
@@ -137,49 +153,23 @@ public partial class Player : CharacterBody2D
 
 	public override void _PhysicsProcess(double delta)
 	{
-		if (IsCurrentPlayer())
+		if (input.Crouching)
 		{
-
-			if (DevMode)
-			{
-				if (Multiplayer.GetUniqueId() == 1)
-				{
-					if (Input.IsActionJustPressed("crouch"))
-					{
-						Crouched = true;
-					}
-				}
-				else
-				{
-					Crouched = Input.IsActionPressed("crouch");
-				}
-			}
-			else
-			{
-				Crouched = Input.IsActionPressed("crouch");
-			}
-
-
-
-
-			Vector2 direction = new Vector2(
-				Input.GetActionStrength("right") - Input.GetActionStrength("left"),
-				Input.GetActionStrength("down") - Input.GetActionStrength("up")
-			);
-			direction = direction.Normalized();
-			Velocity = Velocity.Lerp(direction * MovementSpeed, 0.1f);
-			Velocity = Velocity * (float)(1 - (Friction * delta));
-			MoveAndSlide();
-			Position = new Vector2(
-				x: Mathf.Clamp(Position.X, 0, Main.ScreenSize.X),
-				y: Mathf.Clamp(Position.Y, 0, Main.ScreenSize.Y)
-			);
-			syncPosition = GlobalPosition;
+			IsCrouching = true;
+			SetAnimation("crouch");
 		}
-		else
-		{
-			GlobalPosition = GlobalPosition.Lerp(syncPosition, 0.25f);
+		else { 
+			IsCrouching=false;
+			SetAnimation("walk");
 		}
+		Vector2 direction = input.Direction.Normalized();
+		Velocity = Velocity.Lerp(direction * MovementSpeed, 0.1f);
+		Velocity = Velocity * (float)(1 - (Friction * delta));
+		MoveAndSlide();
+		Position = new Vector2(
+			x: Mathf.Clamp(Position.X, 0, Level.ScreenSize.X),
+			y: Mathf.Clamp(Position.Y, 0, Level.ScreenSize.Y)
+		);
 	}
 
 	public void OnEnteringHidingPlace(Node2D body)
@@ -209,38 +199,15 @@ public partial class Player : CharacterBody2D
 		animatedSprite2D.Animation = animation;
 	}
 
-	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
-	async private void Spotted(string playerName)
+	//[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+	async private void Spotted(Player player)
 	{
-		GetParent().GetNode<Player>(playerName).IsSpotted = true;
+		player.IsSpotted = true;
 		await ToSignal(GetTree().CreateTimer(SpottedDelay), SceneTreeTimer.SignalName.Timeout);
-		GetParent().GetNode<Player>(playerName).IsSpotted = false;
+		//player.IsSpotted = false;
 	}
 
 
-	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true)]
-	public void SetSeeker(string playerName)
-	{
-		Player playerNode = GetParent().GetNode<Player>(playerName);
-		GD.Print($"The Seeker Is : {playerNode.Name}");
-		GD.Print($"This player Is : {Multiplayer.GetUniqueId()}");
-		playerNode.Modulate = new Color(255, 0, 0, 1);
-		//if (IsCurrentPlayer())
-		//{
-
-			
-
-			if (playerNode.Name == Multiplayer.GetUniqueId().ToString())
-			{
-				GetNode<HUD>("HUD").ShowMessage("SEEKER");
-			}
-			else {
-				GetNode<HUD>("HUD").ShowMessage("Hider");
-			}
-		//}
-		
-
-	}
 
 
 }

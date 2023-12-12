@@ -1,9 +1,20 @@
-[gd_scene load_steps=3 format=3 uid="uid://cm354yjyby7j5"]
+[gd_scene load_steps=3 format=3 uid="uid://ucv8wyn8lrwc"]
 
-[ext_resource type="Script" path="res://Main.cs" id="1_wkrem"]
-[ext_resource type="PackedScene" uid="uid://c14sv2c0thpay" path="res://World.tscn" id="4_ufn7c"]
+[ext_resource type="Script" path="res://MultiplayerController.cs" id="1_2phjm"]
+[ext_resource type="PackedScene" uid="uid://c664ulvc0k03i" path="res://MultiplayerController.tscn" id="2_rwp28"]
 
-[node name="Main" type="Node2D"]
-script = ExtResource("1_wkrem")
+[node name="Main" type="Node"]
+script = ExtResource("1_2phjm")
 
-[node name="World" parent="." instance=ExtResource("4_ufn7c")]
+[node name="Level" type="Node" parent="."]
+
+[node name="LevelSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("res://Level.tscn")
+spawn_path = NodePath("../Level")
+spawn_limit = 1
+
+[node name="Multiplayer Controller" parent="." instance=ExtResource("2_rwp28")]
+
+[connection signal="HostButtonPressed" from="Multiplayer Controller" to="." method="OnHostButtonDown"]
+[connection signal="JoinButtonPressed" from="Multiplayer Controller" to="." method="OnJoinButtonDown"]
+[connection signal="StartGameButtonPressed" from="Multiplayer Controller" to="." method="OnStartGameButtonDown"]
