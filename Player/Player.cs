@@ -27,7 +27,18 @@ public partial class Player : CharacterBody2D
 	[Export]
 	public int MovementSpeed = 200;
 	[Export]
-	public PlayerRole Role = PlayerRole.None;
+	public PlayerRole Role
+	{
+		get => _role;
+		set
+		{
+			_role = value;
+			OnRoleSet();
+		}
+	}
+
+	private PlayerRole _role = PlayerRole.None;
+
 	[Export]
 	public bool IsVisible = true;
 	[Export]
@@ -57,7 +68,13 @@ public partial class Player : CharacterBody2D
 		spottedTimer = GetNode<Timer>("SpottedTimer");
 		animatedSprite2D = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
 	}
-
+	private void OnRoleSet()
+	{
+        if (Multiplayer.GetUniqueId()==this.PlayerId)
+        {            
+			GetNode<HUD>("HUD").ShowMessage($"YOU ARE A\n{this.Role}");
+        }
+	}
 	public override void _Process(double delta)
 	{
 		ServerProcess(delta);		
