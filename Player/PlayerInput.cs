@@ -1,9 +1,7 @@
 using Godot;
-using System;
 
 public partial class PlayerInput : MultiplayerSynchronizer
 {
-	// Called when the node enters the scene tree for the first time.
 	[Export]
 	public bool Crouching = false;
 	[Export]
@@ -13,24 +11,9 @@ public partial class PlayerInput : MultiplayerSynchronizer
 		SetProcess(GetMultiplayerAuthority()==Multiplayer.GetUniqueId());
 	}
 
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
 		Direction = Input.GetVector("left", "right", "up", "down");
-		//if (Input.IsActionJustPressed("crouch"))
-		//{
-		//	Rpc(nameof(Crouch),Input.IsActionPressed("crouch")) ;
-		//}
-		Rpc(nameof(Crouch), Input.IsActionPressed("crouch"));
-
-
-
+		Crouching = Input.IsActionPressed("crouch");
 	}
-
-	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
-	public void Crouch(bool crouching)
-	{
-		Crouching=crouching;
-	}
-
 }

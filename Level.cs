@@ -63,22 +63,6 @@ public partial class Level : Node2D
 	}
 
 
-
-
-	//	Player currentPlayer = playerScene.Instantiate<Player>();
-	//	currentPlayer.Name = player.Id.ToString();
-	//			//currentPlayer.SetUpPlayer(player.Name);
-	//			foreach (Node2D spawnpoint in GetTree().GetNodesInGroup("PlayerSpawnPoints"))
-	//			{
-	//				if (int.Parse(spawnpoint.Name) == index)
-	//				{
-	//					currentPlayer.GlobalPosition = spawnpoint.Position;
-	//				}
-	//			}
-	//			AddChild(currentPlayer);
-	//index++;
-
-
 	private int spawnPointIndex = 0;
 public void AddPlayer(long id)
 	{

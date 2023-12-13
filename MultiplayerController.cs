@@ -16,8 +16,6 @@ public partial class MultiplayerController : Node
 	private ENetConnection.CompressionMode compressionMode = ENetConnection.CompressionMode.RangeCoder;
 	public override void _Ready()
 	{
-		//Multiplayer.PeerConnected += PeerConnected;
-		//Multiplayer.PeerDisconnected += PeerDisconnected;
 		Multiplayer.ConnectedToServer += ConnectedToServer;
 		Multiplayer.ConnectionFailed += ConnectionFailed;
 		if (OS.GetCmdlineArgs().Contains("--server"))
@@ -38,29 +36,6 @@ public partial class MultiplayerController : Node
 		Multiplayer.MultiplayerPeer = peer;
 	}
 
-
-	private void PeerConnected(long id)
-	{
-		GD.Print($"Player Connected! : {id.ToString()}");
-
-	}
-
-	private void PeerDisconnected(long id)
-	{
-		GD.Print($"Player Disconnected! : {id.ToString()}");
-		int index = GameManager.Players.FindIndex(player => player.Id == id);
-		GameManager.Players.RemoveAt(index);
-		Array<Node> players = GetTree().GetNodesInGroup("Player");
-		foreach ( Node node in players )
-		{
-			if(node.Name == id.ToString())
-			{
-				node.QueueFree();
-			}
-		}
-
-	}
-
 	private void ConnectionFailed()
 	{
 		GD.Print("CONNECTION FAILED");
@@ -68,14 +43,11 @@ public partial class MultiplayerController : Node
 
 	private void ConnectedToServer()
 	{
-		
 		GD.Print("Connected to Server!");
-		//RpcId(1,nameof(SendPlayerInformation), GetNode<LineEdit>("VBoxContainer/LineEdit").Text, Multiplayer.GetUniqueId());
 	}
 
 	public void OnHostButtonDown() {
 		HostGame();
-		//SendPlayerInformation(GetNode<LineEdit>("VBoxContainer/LineEdit").Text, 1);
 	}
 
 	public void OnJoinButtonDown()
@@ -96,11 +68,6 @@ public partial class MultiplayerController : Node
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer,CallLocal =true,TransferMode =MultiplayerPeer.TransferModeEnum.Reliable)]
 	private void StartGame()
 	{
-		//foreach(PlayerInfo player in GameManager.Players)
-		//{
-		//	GD.Print($"{player.Name} is playing");
-		//}
-
 		GetNode<Control>("Multiplayer Controller").Hide();
 		GetTree().Paused = false;
 
@@ -109,28 +76,6 @@ public partial class MultiplayerController : Node
 			CallDeferred(nameof(ChangeLevel), ResourceLoader.Load<PackedScene>("res://Level.tscn"));
 		}
 	}
-
-	//[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
-	//private void SendPlayerInformation(string name,int id)
-	//{
-	//	PlayerInfo playerInfo = new PlayerInfo()
-	//	{
-	//		Name = name,
-	//		Id = id
-	//	};
-	//	if (!GameManager.Players.Contains(playerInfo)){
-	//		GameManager.Players.Add(playerInfo);
-	//	}
-
-	//	if (Multiplayer.IsServer())
-	//	{
-	//		foreach(PlayerInfo player  in GameManager.Players)
-	//		{
-	//			Rpc(nameof(SendPlayerInformation),player.Name,player.Id);
-	//		}
-	//	}
-
-	//}
 
 	private void ChangeLevel(PackedScene scene)
 	{

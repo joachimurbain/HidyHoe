@@ -14,6 +14,12 @@ public partial class Player : CharacterBody2D
 		Hider
 	}
 
+	public enum PlayerAnimation
+	{
+		Crouch,
+		Walk,
+	}
+
 	[Export]
 	public float SpottedDelay = 3.0f;
 	[Export]
@@ -28,88 +34,115 @@ public partial class Player : CharacterBody2D
 	public bool IsSpotted = false;
 	[Export]
 	public bool IsCrouching = false;
-	
-
 	[Export]
-	public int PlayerId { get=>_player; set {
+	public int PlayerId
+	{
+		get => _player;
+		set
+		{
 			_player = value;
 			GetNode<PlayerInput>("PlayerInput").SetMultiplayerAuthority(_player);
 		}
 	}
 	private int _player = 1;
-
-
-
 	private PlayerInput input;
 	private int boxContact = 0;
-
+	private Timer spottedTimer;
+	private AnimatedSprite2D animatedSprite2D;
 
 
 	public override void _Ready()
 	{
 		input = GetNode<PlayerInput>("PlayerInput");
+		spottedTimer = GetNode<Timer>("SpottedTimer");
+		animatedSprite2D = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
 	}
-
-
 
 	public override void _Process(double delta)
 	{
-		SetVision();
-
-		//if (Multiplayer.GetUniqueId() == PlayerId) { 
-		//}
-		IsVisible = !(IsCrouching && IsAgainstObstacle() && !IsSpotted);
-
+		ServerProcess(delta);		
 		Rpc(nameof(SetVisibility));
+	}
 
-		//if (!IsVisible)
-		//{
-		//	Hide();
-		//}
-		//else
-		//{
-		//	Show();
-		//}
-
+	private void ServerProcess(double delta)
+	{
+		if (!Multiplayer.IsServer())
+		{
+			return;
+		}
+		SetVision();
+		IsVisible = !(IsCrouching && IsAgainstObstacle() && !IsSpotted);
 	}
 
 	private void SetVision()
 	{
-		if (Multiplayer.IsServer())
+		var players = GetTree().GetNodesInGroup("Players");
+		foreach (Player player in players)
 		{
-			var players = GetTree().GetNodesInGroup("Players");
-			foreach (Player player in players)
+			if (this.Role == player.Role)
 			{
-				bool spotted = false;
-				if (this.Name == player.Name || this.Role == player.Role)
-				{
-					continue;
-				}
-				RayCast2D rayCast = GetNodeOrNull<RayCast2D>("Raycast_" + player.Name);
-				if (rayCast == null)
-				{
-					rayCast = new RayCast2D();
-					rayCast.Name = "Raycast_" + player.Name;
-					rayCast.TopLevel = true;
-					rayCast.Enabled = true;
-					AddChild(rayCast);
-				}
-				rayCast.Position = GlobalPosition;
-				rayCast.TargetPosition = -1 * player.ToLocal(GlobalPosition);
-
-				if (HasClearLineOfSight(rayCast))
-				{
-					Spotted(player);
-					spotted = true;
-				}
-				if (!spotted)// TMP FIX => delayed ispotted reset is causing issues. replace scene timer with real timer and reset timer if spotted could be a fix
-				{
-					IsSpotted = false;
-				}
+				continue;
+			}
+			RayCast2D rayCast = GetOrSetRayCast(player);
+			UpdateRayCast(rayCast, player);
+			if (HasClearLineOfSight(rayCast))
+			{
+				Spotted(player);
 			}
 		}
 	}
+	private RayCast2D GetOrSetRayCast(Player player)
+	{
+		RayCast2D rayCast = GetNodeOrNull<RayCast2D>("Raycast_" + player.Name);
+		if (rayCast == null)
+		{
+			rayCast = DrawRayCast(player);
+		}
+		return rayCast;
+	}
+	private RayCast2D DrawRayCast(Player player)
+	{
+		RayCast2D rayCast = new RayCast2D();
+		rayCast.Name = "Raycast_" + player.Name;
+		rayCast.TopLevel = true;
+		rayCast.Enabled = true;
+		AddChild(rayCast);
+		return rayCast;
+	}
 
+	private void UpdateRayCast(RayCast2D rayCast,Player player)
+	{
+		rayCast.Position = GlobalPosition;
+		rayCast.TargetPosition = -1 * player.ToLocal(GlobalPosition);
+	}
+	private bool HasClearLineOfSight(RayCast2D rayCast)
+	{
+		if (rayCast.IsColliding())
+		{
+			Node2D collision = (Node2D)rayCast.GetCollider();
+			if (collision is Player)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private void Spotted(Player player)
+	{
+		player.IsSpotted = true;
+		if (!player.spottedTimer.IsStopped())
+		{
+			player.spottedTimer.Stop();
+		}
+		player.spottedTimer.WaitTime = SpottedDelay;
+		player.spottedTimer.Start();
+	}
+
+	private bool IsAgainstObstacle()
+	{
+		return boxContact > 0;
+	}
 
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
 	private void SetVisibility()
@@ -134,34 +167,27 @@ public partial class Player : CharacterBody2D
 		//TODO TWEEN THIS SHIT UP
 	}
 
-	private bool HasClearLineOfSight(RayCast2D rayCast)
-	{
-		if (rayCast.IsColliding())
-		{
-			Node2D collision = (Node2D)rayCast.GetCollider();
-			if (collision is Player)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private bool DevMode = true;
-
-
-
 	public override void _PhysicsProcess(double delta)
 	{
-		if (input.Crouching)
+		SetCrouching(delta);
+		SetPosition(delta);
+	}
+
+	private void SetCrouching(double delta)
+	{
+		IsCrouching = input.Crouching;
+		if (IsCrouching)
 		{
-			IsCrouching = true;
-			SetAnimation("crouch");
+			animatedSprite2D.Animation = PlayerAnimation.Crouch.ToString();
 		}
-		else { 
-			IsCrouching=false;
-			SetAnimation("walk");
+		else
+		{
+			animatedSprite2D.Animation = PlayerAnimation.Walk.ToString();
 		}
+	}
+
+	private void SetPosition(double delta)
+	{
 		Vector2 direction = input.Direction.Normalized();
 		Velocity = Velocity.Lerp(direction * MovementSpeed, 0.1f);
 		Velocity = Velocity * (float)(1 - (Friction * delta));
@@ -187,27 +213,8 @@ public partial class Player : CharacterBody2D
 			boxContact--;
 		}
 	}
-
-	private bool IsAgainstObstacle()
+	public void OnSpottedTimerTimeout()
 	{
-		return boxContact > 0;
+		IsSpotted = false;
 	}
-
-	private void SetAnimation(string animation)
-	{
-		AnimatedSprite2D animatedSprite2D = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		animatedSprite2D.Animation = animation;
-	}
-
-	//[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
-	async private void Spotted(Player player)
-	{
-		player.IsSpotted = true;
-		await ToSignal(GetTree().CreateTimer(SpottedDelay), SceneTreeTimer.SignalName.Timeout);
-		//player.IsSpotted = false;
-	}
-
-
-
-
 }
