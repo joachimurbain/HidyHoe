@@ -5,6 +5,8 @@ public partial class PlayerInput : MultiplayerSynchronizer
 	[Export]
 	public bool Crouching = false;
 	[Export]
+	public bool Sprinting = false;
+	[Export]
 	public Vector2 Direction = new Vector2();
 	public override void _Ready()
 	{
@@ -15,5 +17,6 @@ public partial class PlayerInput : MultiplayerSynchronizer
 	{
 		Direction = Input.GetVector("left", "right", "up", "down");
 		Crouching = Input.IsActionPressed("crouch");
+		Sprinting = Input.IsActionPressed("sprint");
 	}
 }

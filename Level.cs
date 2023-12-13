@@ -35,11 +35,11 @@ public partial class Level : Node2D
 			{
 				if (index == seekerIndex)
 				{
-					player.Role = Player.PlayerRole.Seeker;
+					player.Role = Globals.PlayerRole.Seeker;
 				}
 				else
 				{
-					player.Role = Player.PlayerRole.Hider;
+					player.Role = Globals.PlayerRole.Hider;
 				}
 				index++;
 			}

@@ -7,18 +7,7 @@ using System.Data;
 public partial class Player : CharacterBody2D
 {
 
-	public enum PlayerRole
-	{
-		None,
-		Seeker,
-		Hider
-	}
 
-	public enum PlayerAnimation
-	{
-		Crouch,
-		Walk,
-	}
 
 	[Export]
 	public float SpottedDelay = 3.0f;
@@ -27,7 +16,7 @@ public partial class Player : CharacterBody2D
 	[Export]
 	public int MovementSpeed = 200;
 	[Export]
-	public PlayerRole Role
+	public Globals.PlayerRole Role
 	{
 		get => _role;
 		set
@@ -37,7 +26,7 @@ public partial class Player : CharacterBody2D
 		}
 	}
 
-	private PlayerRole _role = PlayerRole.None;
+	private Globals.PlayerRole _role = Globals.PlayerRole.None;
 
 	[Export]
 	public bool IsVisible = true;
@@ -195,11 +184,11 @@ public partial class Player : CharacterBody2D
 		IsCrouching = input.Crouching;
 		if (IsCrouching)
 		{
-			animatedSprite2D.Animation = PlayerAnimation.Crouch.ToString();
+			animatedSprite2D.Animation = Globals.PlayerAnimation.Crouch.ToString();
 		}
 		else
 		{
-			animatedSprite2D.Animation = PlayerAnimation.Walk.ToString();
+			animatedSprite2D.Animation = Globals.PlayerAnimation.Walk.ToString();
 		}
 	}
 
