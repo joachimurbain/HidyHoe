@@ -1,10 +1,14 @@
-[gd_scene load_steps=11 format=3 uid="uid://0qd26hmxql40"]
+[gd_scene load_steps=15 format=3 uid="uid://0qd26hmxql40"]
 
 [ext_resource type="Script" path="res://Player/Player.cs" id="1_26ey4"]
 [ext_resource type="Texture2D" uid="uid://dmwo5lpissgws" path="res://art/playerGrey_up2.png" id="1_s2mnr"]
 [ext_resource type="Texture2D" uid="uid://c2uev4fa17t1l" path="res://art/playerGrey_up1.png" id="2_ddahd"]
 [ext_resource type="Script" path="res://Player/PlayerInput.cs" id="2_ngrub"]
 [ext_resource type="PackedScene" uid="uid://b1x218qdi7i0c" path="res://Player/Hud.tscn" id="5_oma22"]
+[ext_resource type="Script" path="res://Player/StaminaComponent.cs" id="6_2c68h"]
+[ext_resource type="Script" path="res://Player/VisionComponent.cs" id="7_al52m"]
+[ext_resource type="Script" path="res://Player/MovementComponent.cs" id="7_mkkli"]
+[ext_resource type="Script" path="res://Player/StealthComponent.cs" id="9_jsgq3"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_sd7fr"]
 properties/0/path = NodePath(".:PlayerId")
@@ -25,17 +29,6 @@ properties/4/replication_mode = 2
 properties/5/path = NodePath(".:IsCrouching")
 properties/5/spawn = false
 properties/5/replication_mode = 2
-
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_6jik8"]
-properties/0/path = NodePath(".:Direction")
-properties/0/spawn = false
-properties/0/replication_mode = 1
-properties/1/path = NodePath(".:Crouching")
-properties/1/spawn = false
-properties/1/replication_mode = 2
-properties/2/path = NodePath(".:Sprinting")
-properties/2/spawn = false
-properties/2/replication_mode = 2
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_wqxvc"]
 animations = [{
@@ -60,6 +53,17 @@ animations = [{
 radius = 13.5
 height = 27.0
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_6jik8"]
+properties/0/path = NodePath(".:Direction")
+properties/0/spawn = false
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:Crouching")
+properties/1/spawn = false
+properties/1/replication_mode = 2
+properties/2/path = NodePath(".:Running")
+properties/2/spawn = false
+properties/2/replication_mode = 2
+
 [sub_resource type="CircleShape2D" id="CircleShape2D_54rtq"]
 radius = 17.5183
 
@@ -69,11 +73,6 @@ script = ExtResource("1_26ey4")
 [node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_sd7fr")
 
-[node name="PlayerInput" type="MultiplayerSynchronizer" parent="."]
-root_path = NodePath(".")
-replication_config = SubResource("SceneReplicationConfig_6jik8")
-script = ExtResource("2_ngrub")
-
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, 9.53674e-07)
 scale = Vector2(0.25, 0.25)
@@ -81,27 +80,42 @@ sprite_frames = SubResource("SpriteFrames_wqxvc")
 animation = &"Walk"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+visible = false
 position = Vector2(0.2, -1.5)
 rotation = 1.5708
 shape = SubResource("CapsuleShape2D_72ggd")
 
-[node name="HidingRadius" type="Area2D" parent="."]
+[node name="HUD" parent="." instance=ExtResource("5_oma22")]
+
+[node name="StaminaComponent" type="Node2D" parent="."]
+script = ExtResource("6_2c68h")
+
+[node name="VisionComponent" type="Node2D" parent="."]
+script = ExtResource("7_al52m")
+
+[node name="SpottedTimer" type="Timer" parent="VisionComponent"]
+one_shot = true
+
+[node name="MovementComponent" type="Node2D" parent="."]
+script = ExtResource("7_mkkli")
+
+[node name="PlayerInput" type="MultiplayerSynchronizer" parent="MovementComponent"]
+root_path = NodePath(".")
+replication_config = SubResource("SceneReplicationConfig_6jik8")
+script = ExtResource("2_ngrub")
+
+[node name="StealthComponent" type="Node2D" parent="."]
+script = ExtResource("9_jsgq3")
+
+[node name="HidingRadius" type="Area2D" parent="StealthComponent"]
 collision_layer = 128
 collision_mask = 128
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="HidingRadius"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StealthComponent/HidingRadius"]
 position = Vector2(0.2, -1.5)
 rotation = 1.5708
 shape = SubResource("CircleShape2D_54rtq")
 
-[node name="RayCast2D" type="RayCast2D" parent="."]
-target_position = Vector2(0, 0)
-
-[node name="HUD" parent="." instance=ExtResource("5_oma22")]
-
-[node name="SpottedTimer" type="Timer" parent="."]
-one_shot = true
-
-[connection signal="body_entered" from="HidingRadius" to="." method="OnEnteringHidingPlace"]
-[connection signal="body_exited" from="HidingRadius" to="." method="OnLeavingHidingPlace"]
-[connection signal="timeout" from="SpottedTimer" to="." method="OnSpottedTimerTimeout"]
+[connection signal="timeout" from="VisionComponent/SpottedTimer" to="VisionComponent" method="OnSpottedTimerTimeout"]
+[connection signal="body_entered" from="StealthComponent/HidingRadius" to="StealthComponent" method="OnEnteringHidingPlace"]
+[connection signal="body_exited" from="StealthComponent/HidingRadius" to="StealthComponent" method="OnLeavingHidingPlace"]

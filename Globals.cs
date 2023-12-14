@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class Globals : GodotObject
+public partial class Globals : Node
 {
 	public enum PlayerRole
 	{
