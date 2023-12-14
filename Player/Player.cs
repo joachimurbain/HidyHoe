@@ -15,6 +15,8 @@ public partial class Player : CharacterBody2D
 	[Export]
 	public bool IsRunning = false;
 	[Export]
+	public double CurrentStamina;
+	[Export]
 	public int PlayerId
 	{
 		get => _playerId;

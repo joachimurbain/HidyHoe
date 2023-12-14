@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://cor01veawdm44"]
+
+[ext_resource type="Script" path="res://Player/VisionComponent.cs" id="1_b88bh"]
+
+[node name="VisionComponent" type="Node2D"]
+script = ExtResource("1_b88bh")
+
+[node name="SpottedTimer" type="Timer" parent="."]
+one_shot = true
+
+[connection signal="timeout" from="SpottedTimer" to="." method="OnSpottedTimerTimeout"]

@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://h0ldiitrsso2"]
+
+[ext_resource type="Script" path="res://Player/StealthComponent.cs" id="1_uqev3"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_54rtq"]
+radius = 17.5183
+
+[node name="StealthComponent" type="Node2D"]
+script = ExtResource("1_uqev3")
+
+[node name="HidingRadius" type="Area2D" parent="."]
+collision_layer = 128
+collision_mask = 128
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HidingRadius"]
+position = Vector2(0.2, -1.5)
+rotation = 1.5708
+shape = SubResource("CircleShape2D_54rtq")
+
+[connection signal="body_entered" from="HidingRadius" to="." method="OnEnteringHidingPlace"]
+[connection signal="body_exited" from="HidingRadius" to="." method="OnLeavingHidingPlace"]

@@ -8,7 +8,7 @@ public partial class MovementComponent : Node
 	[Export]
 	public float MovementSpeed = 200f;
 	[Export]
-	public float SprintSpeedMultiplier = 1.5f;
+	public float SprintSpeedMultiplier = 3f;
 
 
 	private PlayerInput input;
@@ -53,7 +53,7 @@ public partial class MovementComponent : Node
 	private void UpdateSprintingState(double delta)
 	{
 		localPlayer.IsRunning = input.Running;
-		if (localPlayer.IsRunning)
+		if (localPlayer.IsRunning && localPlayer.CurrentStamina>0)
 		{
 			MovementSpeed = baseMovementSpeed * SprintSpeedMultiplier;
 

@@ -6,11 +6,10 @@ public partial class StaminaComponent : Node
 	[Export]
 	public double MaxStamina = 100;
 	[Export]
-	public double StaminaDrainRate = 10;
+	public double StaminaDrainRate = 50;
 	[Export]
-	public double StaminaRegenerationRate = 0.2;
-	[Export]
-	public double CurrentStamina;
+	public double StaminaRegenerationRate = 10;
+
 
 
 	private Player localPlayer;
@@ -18,27 +17,38 @@ public partial class StaminaComponent : Node
 	public override void _Ready()
 	{
 		localPlayer = GetParent<Player>();
-		CurrentStamina = MaxStamina;
+		localPlayer.CurrentStamina = MaxStamina;
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
-		
-		if (localPlayer.IsRunning)
+
+		if (localPlayer.IsRunning && !localPlayer.Velocity.IsZeroApprox())
 		{
 			DeductStamina(StaminaDrainRate * delta);
 		}
+		else
+		{
+			RegenStamina(StaminaRegenerationRate * delta);
+		}
 	}
 
-		private void DeductStamina(double amount)
+	private void DeductStamina(double amount)
 	{
-		CurrentStamina = Mathf.Clamp(CurrentStamina - amount, 0, MaxStamina);
-		if (CurrentStamina <= 0f)
+		localPlayer.CurrentStamina = Mathf.Clamp(localPlayer.CurrentStamina - amount, 0, MaxStamina);
+		
+		if (localPlayer.CurrentStamina <= 0f)
 		{
 			GD.Print("No More Stamina");
 			// Stamina is depleted, handle accordingly (e.g., disable sprinting)
 		}
+
+	}
+
+	private void RegenStamina(double amount)
+	{
+		localPlayer.CurrentStamina = Mathf.Clamp(localPlayer.CurrentStamina + amount, 0, MaxStamina);
 	}
 
 }
