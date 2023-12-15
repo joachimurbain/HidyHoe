@@ -7,34 +7,21 @@ public partial class HUD : CanvasLayer
 	private Player localPlayer {
 		get => GetParent<Player>();
 	}
-	private ProgressBar staminaBar;
+
 
 	public override void _Ready()
 	{
-
-		/*
-		
-		make use of multiplayer sync?
-
-				MultiplayerSynchronizer multiplayerSynchronizer = new MultiplayerSynchronizer();
-		multiplayerSynchronizer.AddVisibilityFilter("")
-		
-		*/
-
-		if (Multiplayer.GetUniqueId() != localPlayer.PlayerId)
-		{
-			Hide();
-		}
-		else
-		{
-			staminaBar = GetNode<ProgressBar>("Stamina/ProgressBar");
-		}
 		SetProcess(localPlayer.PlayerId == Multiplayer.GetUniqueId());
+		Hide();		
 	}
 
 	public override void _Process(double delta)
 	{
-			staminaBar.Value = localPlayer.CurrentStamina;
+		if(!Visible)
+		{
+			Show();
+		}
+		GetNode<ProgressBar>("Stamina/ProgressBar").Value = localPlayer.CurrentStamina;
 	}
 
 
