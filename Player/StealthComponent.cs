@@ -31,22 +31,23 @@ public partial class StealthComponent : Node
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
 	private void UpdatePlayerVisibility()
 	{
-		Color modulateColor = localPlayer.Modulate;
+		AnimatedSprite2D localPlayerSprite = localPlayer.GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+		Color modulateColor = localPlayerSprite.Modulate;
 		Player clientContext = FindParent("Players").GetNode<Player>(Multiplayer.GetUniqueId().ToString());
 		if (clientContext.Role == localPlayer.Role && !localPlayer.IsVisible)
 		{
 			modulateColor.A = 0.5f;
-			localPlayer.Modulate = modulateColor;
+			localPlayerSprite.Modulate = modulateColor;
 		}
 		else if (!localPlayer.IsVisible)
 		{
 			modulateColor.A = 0.0f;
-			localPlayer.Modulate = modulateColor;
+			localPlayerSprite.Modulate = modulateColor;
 		}
 		else
 		{
 			modulateColor.A = 1.0f;
-			localPlayer.Modulate = modulateColor;
+			localPlayerSprite.Modulate = modulateColor;
 		}
 		//TODO TWEEN THIS SHIT UP
 	}

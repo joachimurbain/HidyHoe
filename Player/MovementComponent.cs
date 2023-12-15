@@ -15,19 +15,31 @@ public partial class MovementComponent : Node
 	private AnimatedSprite2D animatedSprite2D;
 	private float baseMovementSpeed;
 	private Player localPlayer;
+	private GpuParticles2D dustTrail;
 
 
 	public override void _Ready()
 	{
 		localPlayer = GetParent<Player>();
 		animatedSprite2D = localPlayer.GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+		dustTrail = GetNode<GpuParticles2D>("Effects/DustTrail");
 		input = GetNode<PlayerInput>("PlayerInput");
 		baseMovementSpeed = MovementSpeed;
 	}
 
 	public override void _Process(double delta)
 	{
-
+		if(localPlayer.IsRunning && !localPlayer.Velocity.IsZeroApprox() && localPlayer.CurrentStamina>0)
+		{
+			if (!dustTrail.Emitting)
+			{
+				dustTrail.Restart();
+			}
+		}
+		else
+		{
+			dustTrail.Emitting = false;
+		}
 	}
 
 	public override void _PhysicsProcess(double delta)

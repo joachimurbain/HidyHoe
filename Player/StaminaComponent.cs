@@ -23,7 +23,6 @@ public partial class StaminaComponent : Node
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
-
 		if (localPlayer.IsRunning && !localPlayer.Velocity.IsZeroApprox())
 		{
 			DeductStamina(StaminaDrainRate * delta);

@@ -54,6 +54,7 @@ height = 27.0
 
 [node name="Player" type="CharacterBody2D" groups=["Players"]]
 script = ExtResource("1_26ey4")
+metadata/_edit_group_ = true
 
 [node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_sd7fr")
@@ -65,9 +66,14 @@ sprite_frames = SubResource("SpriteFrames_wqxvc")
 animation = &"Walk"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+visible = false
 position = Vector2(0, -3)
 rotation = 1.5708
 shape = SubResource("CapsuleShape2D_72ggd")
+
+[node name="MovementComponent" parent="." instance=ExtResource("6_fnxyn")]
+position = Vector2(0, 17)
+SprintSpeedMultiplier = 2.0
 
 [node name="StaminaComponent" parent="." instance=ExtResource("4_e3e3e")]
 visible = false
@@ -75,11 +81,7 @@ visible = false
 [node name="VisionComponent" parent="." instance=ExtResource("5_dn5mw")]
 visible = false
 
-[node name="MovementComponent" parent="." instance=ExtResource("6_fnxyn")]
-visible = false
-
 [node name="StealthComponent" parent="." instance=ExtResource("7_bb1eg")]
 visible = false
 
 [node name="HUD" parent="." instance=ExtResource("5_oma22")]
-visible = false

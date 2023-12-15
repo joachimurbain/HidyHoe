@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://hhbdgp1owsk4"]
+[gd_scene load_steps=9 format=3 uid="uid://hhbdgp1owsk4"]
 
 [ext_resource type="Script" path="res://Player/MovementComponent.cs" id="1_py8ds"]
 [ext_resource type="Script" path="res://Player/PlayerInput.cs" id="2_brl32"]
+[ext_resource type="Texture2D" uid="uid://6ohrhwmnmulm" path="res://art/dust.png" id="3_ql18f"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_6jik8"]
 properties/0/path = NodePath(".:Direction")
@@ -14,6 +15,30 @@ properties/2/path = NodePath(".:Running")
 properties/2/spawn = false
 properties/2/replication_mode = 2
 
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_w0g8s"]
+particles_animation = true
+particles_anim_h_frames = 5
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="Gradient" id="Gradient_esr8m"]
+offsets = PackedFloat32Array(0.00938967, 0.793427)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_q008g"]
+gradient = SubResource("Gradient_esr8m")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_61vqe"]
+lifetime_randomness = 0.7
+particle_flag_disable_z = true
+angle_max = 54.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.8
+scale_max = 1.2
+color_ramp = SubResource("GradientTexture1D_q008g")
+anim_speed_min = 1.0
+anim_speed_max = 1.0
+
 [node name="MovementComponent" type="Node2D"]
 script = ExtResource("1_py8ds")
 
@@ -21,3 +46,16 @@ script = ExtResource("1_py8ds")
 root_path = NodePath(".")
 replication_config = SubResource("SceneReplicationConfig_6jik8")
 script = ExtResource("2_brl32")
+
+[node name="Effects" type="Node2D" parent="."]
+
+[node name="DustTrail" type="GPUParticles2D" parent="Effects"]
+material = SubResource("CanvasItemMaterial_w0g8s")
+emitting = false
+amount = 10
+process_material = SubResource("ParticleProcessMaterial_61vqe")
+texture = ExtResource("3_ql18f")
+lifetime = 1.2
+speed_scale = 0.6
+interpolate = false
+fract_delta = false
