@@ -35,6 +35,7 @@ public partial class Player : CharacterBody2D
 
 	public override void _Ready()
 	{
+
 	}
 
 
@@ -47,10 +48,7 @@ public partial class Player : CharacterBody2D
 	public void SetRole(Globals.PlayerRole role)
 	{
 		_role = role;
-		if (Multiplayer.GetUniqueId() == this.PlayerId)
-		{
-			GetNode<HUD>("HUD").ShowMessage($"YOU ARE A\n{this.Role}");
-		}
+		GetNode<HUD>("HUD").ShowMessage($"YOU ARE A\n{this.Role}");
 	}
 
 	public override void _Process(double delta)

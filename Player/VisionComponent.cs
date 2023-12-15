@@ -6,11 +6,14 @@ public partial class VisionComponent : Node
 
 	[Export]
 	public float SpottedDelay = 3.0f;
-	private Player localPlayer;
+	private Player localPlayer
+	{
+		get => GetParent<Player>();
+	}
 
 	public override void _Ready()
 	{
-		localPlayer = GetParent<Player>();
+		
 	}
 
 	public override void _Process(double delta)

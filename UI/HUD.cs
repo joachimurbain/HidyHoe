@@ -4,29 +4,37 @@ using System;
 public partial class HUD : CanvasLayer
 {
 
-	private Player localPlayer;
+	private Player localPlayer {
+		get => GetParent<Player>();
+	}
 	private ProgressBar staminaBar;
 
 	public override void _Ready()
 	{
-		localPlayer = GetParent<Player>();
-		staminaBar = GetNode<ProgressBar>("Stamina/ProgressBar");
+
+		/*
+		
+		make use of multiplayer sync?
+
+				MultiplayerSynchronizer multiplayerSynchronizer = new MultiplayerSynchronizer();
+		multiplayerSynchronizer.AddVisibilityFilter("")
+		
+		*/
+
+		if (Multiplayer.GetUniqueId() != localPlayer.PlayerId)
+		{
+			Hide();
+		}
+		else
+		{
+			staminaBar = GetNode<ProgressBar>("Stamina/ProgressBar");
+		}
+		SetProcess(localPlayer.PlayerId == Multiplayer.GetUniqueId());
 	}
 
 	public override void _Process(double delta)
 	{
-		
-
-        if (Multiplayer.GetUniqueId() == localPlayer.PlayerId)
-		{
-
-			GD.Print(localPlayer.PlayerId + " | " +localPlayer.CurrentStamina);
 			staminaBar.Value = localPlayer.CurrentStamina;
-		}
-		else
-		{
-			Hide(); // TMP FIX. Move HUD out of player ? or use sync visibilty ?
-		}
 	}
 
 
@@ -35,7 +43,6 @@ public partial class HUD : CanvasLayer
 		var message = GetNode<Label>("Message");
 		message.Text = text;
 		message.Show();
-
 		GetNode<Timer>("MessageTimer").Start();
 	}
 

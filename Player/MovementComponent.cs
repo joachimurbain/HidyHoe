@@ -14,13 +14,15 @@ public partial class MovementComponent : Node
 	private PlayerInput input;
 	private AnimatedSprite2D animatedSprite2D;
 	private float baseMovementSpeed;
-	private Player localPlayer;
 	private GpuParticles2D dustTrail;
+	private Player localPlayer
+	{
+		get => GetParent<Player>();
+	}
 
 
 	public override void _Ready()
 	{
-		localPlayer = GetParent<Player>();
 		animatedSprite2D = localPlayer.GetNode<AnimatedSprite2D>("AnimatedSprite2D");
 		dustTrail = GetNode<GpuParticles2D>("Effects/DustTrail");
 		input = GetNode<PlayerInput>("PlayerInput");
