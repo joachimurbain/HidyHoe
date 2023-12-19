@@ -31,9 +31,22 @@ public partial class StealthComponent : Node
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
 	private void UpdatePlayerVisibility()
 	{
-		AnimatedSprite2D localPlayerSprite = localPlayer.GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+		AnimatedSprite2D localPlayerSprite = localPlayer.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+
+		if(localPlayerSprite == null)
+		{
+			return;
+		}
+
 		Color modulateColor = localPlayerSprite.Modulate;
-		Player clientContext = FindParent("Players").GetNode<Player>(Multiplayer.GetUniqueId().ToString());
+		Player clientContext = FindParent("Players").GetNodeOrNull<Player>(Multiplayer.GetUniqueId().ToString());
+
+		if (clientContext == null)
+		{
+			return;
+		}
+
+
 		if (clientContext.Role == localPlayer.Role && !localPlayer.IsVisible)
 		{
 			modulateColor.A = 0.5f;

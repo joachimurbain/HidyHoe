@@ -1,10 +1,18 @@
-[gd_scene load_steps=3 format=3 uid="uid://ucv8wyn8lrwc"]
+[gd_scene load_steps=4 format=3 uid="uid://ucv8wyn8lrwc"]
 
 [ext_resource type="Script" path="res://MultiplayerController.cs" id="1_2phjm"]
-[ext_resource type="PackedScene" uid="uid://c664ulvc0k03i" path="res://MultiplayerController.tscn" id="2_rwp28"]
+[ext_resource type="PackedScene" uid="uid://bobleyduhanix" path="res://UI/Lobby.tscn" id="2_uvq2t"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_fqpl2"]
+properties/0/path = NodePath(".:PlayerList")
+properties/0/spawn = true
+properties/0/replication_mode = 2
 
 [node name="Main" type="Node"]
 script = ExtResource("1_2phjm")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_fqpl2")
 
 [node name="Level" type="Node" parent="."]
 
@@ -13,8 +21,7 @@ _spawnable_scenes = PackedStringArray("res://Level.tscn")
 spawn_path = NodePath("../Level")
 spawn_limit = 1
 
-[node name="Multiplayer Controller" parent="." instance=ExtResource("2_rwp28")]
+[node name="Lobby" parent="." instance=ExtResource("2_uvq2t")]
 
-[connection signal="HostButtonPressed" from="Multiplayer Controller" to="." method="OnHostButtonDown"]
-[connection signal="JoinButtonPressed" from="Multiplayer Controller" to="." method="OnJoinButtonDown"]
-[connection signal="StartGameButtonPressed" from="Multiplayer Controller" to="." method="OnStartGameButtonDown"]
+[connection signal="HostButtonPressed" from="Lobby" to="." method="OnHostButtonDown"]
+[connection signal="JoinButtonPressed" from="Lobby" to="." method="OnJoinButtonDown"]

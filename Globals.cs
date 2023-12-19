@@ -1,4 +1,5 @@
 using Godot;
+using System.Collections.Generic;
 
 public partial class Globals : Node
 {
@@ -14,4 +15,5 @@ public partial class Globals : Node
 		Crouch,
 		Walk,
 	}
+
 }

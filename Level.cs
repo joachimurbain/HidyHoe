@@ -23,7 +23,7 @@ public partial class Level : Node2D
 				AddPlayer(id);
 			}
 
-			if (!OS.GetCmdlineArgs().Contains("--server"))
+			if (DisplayServer.GetName() != "headless")
 			{
 				AddPlayer(1);
 			}

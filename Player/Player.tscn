@@ -66,7 +66,6 @@ sprite_frames = SubResource("SpriteFrames_wqxvc")
 animation = &"Walk"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-visible = false
 position = Vector2(0, -3)
 rotation = 1.5708
 shape = SubResource("CapsuleShape2D_72ggd")
@@ -76,12 +75,9 @@ position = Vector2(0, 17)
 SprintSpeedMultiplier = 2.0
 
 [node name="StaminaComponent" parent="." instance=ExtResource("4_e3e3e")]
-visible = false
 
 [node name="VisionComponent" parent="." instance=ExtResource("5_dn5mw")]
-visible = false
 
 [node name="StealthComponent" parent="." instance=ExtResource("7_bb1eg")]
-visible = false
 
 [node name="HUD" parent="." instance=ExtResource("5_oma22")]
