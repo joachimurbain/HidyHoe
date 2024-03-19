@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GameMode" load_steps=2 format=3 uid="uid://dcy4n4eawdo57"]
+
+[ext_resource type="Script" path="res://GameModes/GameMode.cs" id="1_f44vj"]
+
+[resource]
+script = ExtResource("1_f44vj")
+Name = "Best Of 3"
+Id = 0
+AmountOfRounds = 3

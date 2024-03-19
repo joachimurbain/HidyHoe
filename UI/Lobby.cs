@@ -1,61 +1,99 @@
 using Godot;
+using Godot.Collections;
 using System;
+using System.Reflection.Emit;
 
 public partial class Lobby : Control
 {
+
 	[Signal]
-	public delegate void HostButtonPressedEventHandler();
+	public delegate void ReadyButtonDownEventHandler();
 	[Signal]
-	public delegate void JoinButtonPressedEventHandler();
+	public delegate void CancelButtonDownEventHandler();
+	[Signal]
+	public delegate void GamemodeSelectedEventHandler();
 
-	private LineEdit portNode;
-	private string playerName;
-	private int port;
-	private string address;
+	[Export]
+	private GameMode[] gameModes;
 
+	private ItemList playerList;
+	private MultiplayerController mainNode;
 
+	private Button readyButton;
+	private Button cancelButton;
+
+	private OptionButton gamemodeDropDown;
 	public override void _Ready()
 	{
-		MultiplayerController main = GetParent<MultiplayerController>();
-		address = main.Address;	
-		(FindChild("AddressLineEdit") as LineEdit).Text = address;
-		port = main.Port;
-		(FindChild("PortLineEdit") as LineEdit).Text = port.ToString();
-	}
+		playerList = FindChild("ItemList") as ItemList;
+		playerList.Clear();
+		mainNode = FindParent("Main") as MultiplayerController;
+		readyButton = FindChild("ReadyButton") as Button;
+		cancelButton = FindChild("CancelButton") as Button;
 
-	public void OnNameChange(string name)
-	{
-		playerName = name;
-	}
-
-	public void OnAddressChange(string address)
-	{
-		this.address = address;
-	}
-
-	public void OnPortChange(string port)
-	{
-		string pattern = @"[^\d]";
-		RegEx regEx = new RegEx();
-		regEx.Compile(pattern);
-
-		if (regEx.Search(port) == null)
-		{
-			this.port = int.Parse(port);
-		}
-		else
-		{
-			portNode.DeleteCharAtCaret();
+		RefreshPlayers();
+		// Make the drop down visible only for host/first or make it a vote?
+		if (Multiplayer.IsServer()) { 
+			gamemodeDropDown = FindChild("GamemodeDropDown") as OptionButton;
+			for (int i = 0; i < gameModes.Length; i++)
+			{
+				gamemodeDropDown.AddItem(gameModes[i].Name);
+			}
+			OnGamemodeSelected(0);
 		}
 	}
 
-	public void OnHostButtonDown()
+	public override void _Process(double delta)
 	{
-		EmitSignal(SignalName.HostButtonPressed);
 	}
 
-	public void OnJoinButtonDown()
+	public void OnCloseButton()
 	{
-		EmitSignal(SignalName.JoinButtonPressed);
+		if((FindChild("CancelButton") as Button).Visible)
+		{
+			EmitSignal(SignalName.CancelButtonDown, -1);
+		}
+		mainNode.PlayerDisconnect(Multiplayer.GetUniqueId());
+		QueueFree();
+	}
+
+	public void OnGamemodeSelected(int index)
+	{	
+		EmitSignal(SignalName.GamemodeSelected, gameModes[index]);
+	}
+
+
+	public void RefreshPlayers()
+	{
+		playerList.Clear();
+
+		foreach (PlayerInfo player in mainNode.Players.Values)
+		{
+			playerList.AddItem((string)player.Name);
+		}
+	}
+
+	public void OnReadyButtonDown()
+	{
+		EmitSignal(SignalName.ReadyButtonDown,1);
+		ToggleReadinessButton();
+
+	}
+
+	public void OnCancelButtonDown()
+	{
+		EmitSignal(SignalName.CancelButtonDown,-1);
+		ToggleReadinessButton();
+
+	}
+
+
+	private void ToggleReadinessButton()
+	{
+
+
+
+		readyButton.Visible = !readyButton.Visible;
+		cancelButton.Visible = !cancelButton.Visible;
 	}
 }

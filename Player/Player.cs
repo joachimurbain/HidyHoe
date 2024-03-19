@@ -23,19 +23,25 @@ public partial class Player : CharacterBody2D
 		set => SetPlayerid(value);
 	}
 	private int _playerId = 1;
+
+	private MultiplayerController mainNode
+	{
+		get => FindParent("Main") as MultiplayerController;
+	}
+
 	[Export]
-	public Globals.PlayerRole Role
+	public PlayerInfo.PlayerRole Role
 	{
 		get => _role;
 		set => SetRole(value);
 	}
-	private Globals.PlayerRole _role = Globals.PlayerRole.None;
+	private PlayerInfo.PlayerRole _role = PlayerInfo.PlayerRole.None;
 
 
 
 	public override void _Ready()
 	{
-
+		Role = mainNode.Players[PlayerId].Role;
 	}
 
 
@@ -45,7 +51,7 @@ public partial class Player : CharacterBody2D
 		GetNode<PlayerInput>("MovementComponent/PlayerInput").SetMultiplayerAuthority(playerId);
 	}
 
-	public void SetRole(Globals.PlayerRole role)
+	public void SetRole(PlayerInfo.PlayerRole role)
 	{
 		_role = role;
 		GetNode<HUD>("HUD").ShowMessage($"YOU ARE A\n{this.Role}");

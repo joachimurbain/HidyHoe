@@ -1,35 +1,18 @@
 using Godot;
 using Godot.Collections;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using static Globals;
-using static System.Formats.Asn1.AsnWriter;
+
 
 public partial class MultiplayerController : Node
 {
+
 	[Signal]
 	public delegate void PlayerListUpdateEventHandler();
+
+	[Export]
+	public GameModeId GameModeId;
 	[Export]
 	public int PlayerReadyCount = 0;
-
-	[Export]
-	public Godot.Collections.Dictionary<int, Dictionary> PlayerList
-	{
-		get => playerList;
-		set => SetPlayerList(value);
-	}
-	private Godot.Collections.Dictionary<int, Dictionary> playerList = new Godot.Collections.Dictionary<int, Dictionary>();
-
-	private void SetPlayerList(Godot.Collections.Dictionary<int, Dictionary> playerList)
-	{
-		if (!PlayerList.Equals(playerList))
-		{
-			this.playerList = playerList;
-			EmitSignal(SignalName.PlayerListUpdate);
-		}
-	}
-
 	[Export]
 	public int Port = 8910;
 	[Export]
@@ -37,12 +20,23 @@ public partial class MultiplayerController : Node
 	//private string Address = "151.80.43.66";
 	private ENetMultiplayerPeer peer;
 	private ENetConnection.CompressionMode compressionMode = ENetConnection.CompressionMode.RangeCoder;
+	private Dictionary<int, PlayerInfo> _players = new Dictionary<int, PlayerInfo>();
+	public Dictionary<int, PlayerInfo> Players
+	{
+		get => _players;
+		set => SetPlayers(value);
+	}
+
+	private void SetPlayers(Dictionary<int, PlayerInfo> value)
+	{
+		_players = value;
+		EmitSignal(SignalName.PlayerListUpdate);
+	}
+
 	public override void _Ready()
 	{
 		Multiplayer.ConnectedToServer += ConnectedToServer;
 		Multiplayer.ConnectionFailed += ConnectionFailed;
-
-
 		Multiplayer.PeerDisconnected += PeerDisconnected;
 
 		if (DisplayServer.GetName() == "headless")
@@ -74,7 +68,7 @@ public partial class MultiplayerController : Node
 		GD.Print("Waiting For Players!");
 		if (DisplayServer.GetName() != "headless")
 		{
-			AddWaitingRoom();
+			AddLobby();
 			SendPlayerInformation((FindChild("NameLineEdit") as LineEdit).Text, 1);
 		}
 	}
@@ -92,9 +86,8 @@ public partial class MultiplayerController : Node
 
 	private void ConnectedToServer()
 	{
+		AddLobby();
 		SendPlayerInformation((FindChild("NameLineEdit") as LineEdit).Text, Multiplayer.GetUniqueId());
-		//(FindChild("WaitingRoom") as Control).Show();
-		AddWaitingRoom();
 		GD.Print("Connected to Server!");
 	}
 
@@ -121,27 +114,48 @@ public partial class MultiplayerController : Node
 	private void StartGame()
 	{
 
-		GetNode<Control>("Lobby").Hide();
-		GetNode<Control>("WaitingRoom").Hide();
+		GetNode<Control>("MainMenu").Hide();
+		Lobby lobby = (Lobby)GetNode<Control>("Lobby");
+		lobby.OnCancelButtonDown();
+		lobby.Hide();
 		GetTree().Paused = false;
-
 		if (Multiplayer.IsServer())
 		{
+			SetPlayerRoles();
 			CallDeferred(nameof(ChangeLevel), ResourceLoader.Load<PackedScene>("res://Level.tscn"));
+		}
+	}
+
+	public void SetPlayerRoles()
+	{
+
+		int seekerIndex = new Random().Next(Players.Count);
+		int index = 0;
+		foreach (PlayerInfo player in Players.Values)
+		{
+			if (index == seekerIndex)
+			{
+				player.Role = PlayerInfo.PlayerRole.Seeker;
+			}
+			else
+			{
+				player.Role = PlayerInfo.PlayerRole.Hider;
+			}
+			index++;
 		}
 	}
 
 	private void ChangeLevel(PackedScene scene)
 	{
-		Node level = GetNode("Level");
+		Node level = GetNode("LevelContainer");
 		foreach (Node child in level.GetChildren())
 		{
 			level.RemoveChild(child);
 			child.QueueFree();
+
 		}
 		level.AddChild(scene.Instantiate());
 	}
-
 
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
 	private void SendPlayerInformation(string name, int id)
@@ -152,13 +166,14 @@ public partial class MultiplayerController : Node
 		}
 		else
 		{
-			Dictionary playerInfo = new Dictionary
+			PlayerInfo playerInfo = new PlayerInfo()
 			{
-				{ "Name", name },
-				{ "Id", id }
+				Name = name,
+				Id = id,
 			};
-			PlayerList[id] = playerInfo;
-			PlayerList = PlayerList.Duplicate(); // Trigger SetPlayerList()
+
+			Players[id] = playerInfo;
+			SendPlayerInfo();
 		}
 	}
 
@@ -173,22 +188,33 @@ public partial class MultiplayerController : Node
 		else
 		{
 			PlayerReadyCount += inc;
-			if( PlayerReadyCount == PlayerList.Count ) {
-		
+			if (PlayerReadyCount == Players.Count)
+			{
+
 				Rpc(nameof(StartGame));
 			}
 		}
 
 	}
 
-	public void AddWaitingRoom()
+	public void OnGameModeSelected(GameMode gameMode)
 	{
-		PackedScene scene = ResourceLoader.Load<PackedScene>("res://WaitingRoom.tscn");
-		WaitingRoom waitingRoom = scene.Instantiate() as WaitingRoom;
-		AddChild(waitingRoom);
-		Connect(SignalName.PlayerListUpdate, new Callable(waitingRoom, nameof(waitingRoom.RefreshPlayers)));
-		waitingRoom.Connect(WaitingRoom.SignalName.ReadyButtonDown, new Callable(this, nameof(OnPlayerReadyCheck)));
-		waitingRoom.Connect(WaitingRoom.SignalName.CancelButtonDown, new Callable(this, nameof(OnPlayerReadyCheck)));
+		GameModeId = gameMode.Id;
+	}
+
+
+	
+
+	public void AddLobby()
+	{
+		PackedScene scene = ResourceLoader.Load<PackedScene>("res://UI/Lobby.tscn");
+		Lobby lobby = scene.Instantiate() as Lobby;
+		//PlayerInfoUpdated += lobby.RefreshPlayers;
+		Connect(SignalName.PlayerListUpdate, new Callable(lobby, nameof(lobby.RefreshPlayers)));
+		lobby.Connect(Lobby.SignalName.ReadyButtonDown, new Callable(this, nameof(OnPlayerReadyCheck)));
+		lobby.Connect(Lobby.SignalName.CancelButtonDown, new Callable(this, nameof(OnPlayerReadyCheck)));
+		lobby.Connect(Lobby.SignalName.GamemodeSelected, new Callable(this, nameof(OnGameModeSelected)));
+		AddChild(lobby);
 	}
 
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
@@ -201,10 +227,141 @@ public partial class MultiplayerController : Node
 		else
 		{
 
-			PlayerList.Remove(playerId);
-			PlayerList = PlayerList.Duplicate();
+			Players.Remove(playerId);
 			Multiplayer.MultiplayerPeer.DisconnectPeer(playerId);
 		}
 
 	}
+
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	public void RequestPlayerInfos()
+	{
+		if (!Multiplayer.IsServer())
+		{
+			RpcId(1, nameof(RequestPlayerInfos));
+		}
+		SendPlayerInfo();
+	}
+
+	public void SendPlayerInfo()
+	{
+		if (!Multiplayer.IsServer())
+		{
+			return;
+		}
+
+		foreach (PlayerInfo playerInfo in Players.Values)
+		{
+			Rpc(nameof(ReceivePlayerInfo), playerInfo.ToJsonString());
+		}
+
+	}
+
+	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	public void ReceivePlayerInfo(string jsonPlayerInfo)
+	{
+		PlayerInfo playerInfo= PlayerInfo.FromJsonString(jsonPlayerInfo);
+		Players[playerInfo.Id] = playerInfo;
+		UpdatePlayers();
+	}
+
+	public void UpdatePlayers() { 
+		Players = Players.Duplicate(); // Trigger Setter
+	}
+
+	async public void EndRound(Globals.RoundOutcome outcome)
+	{
+		GetTree().Paused = true;
+		int seekerScore = outcome == Globals.RoundOutcome.SeekerVictory ? 1 : 0;
+		int hiderScore = outcome == Globals.RoundOutcome.HiderVictory ? 1 : 0;
+		GameMode gameMode = GD.Load<GameMode>($"res://GameModes/{GameModeId}.tres");
+
+
+		bool gameOver = false;
+		foreach (PlayerInfo playerInfo in Players.Values)
+		{
+			int score = playerInfo.Role == PlayerInfo.PlayerRole.Seeker ? seekerScore : hiderScore;
+			playerInfo.Score.Add(score);
+
+			if (gameMode.AmountOfRounds == playerInfo.Score.Count)
+			{
+				//Array<Node> players = GetTree().GetNodesInGroup("Players");
+				//foreach (Player player in players)
+				//{
+				//	player.PlayerId = 1;
+				//}
+				//playerInfo.GameOver = true;
+					gameOver = true;
+			}
+
+		}
+
+		if (gameOver)
+		{
+
+			SendPlayerInfo();
+			Array<Node> HUDS = GetTree().GetNodesInGroup("HUD");
+			foreach (HUD HUD in HUDS)
+			{
+				HUD.ShowMessage($"Game Over");
+				//RoundCounter x = (RoundCounter)HUD.FindChild("RoundCounter");
+			}
+			await ToSignal(GetTree().CreateTimer(2.0), SceneTreeTimer.SignalName.Timeout);
+
+			var players = GetNode("LevelContainer/Level/Players").GetChildren();
+
+
+
+			Array<Node> playerInputs = GetTree().GetNodesInGroup("PlayerInput");
+			foreach (Node2D player in players)
+			{
+				MultiplayerSynchronizer playerInput = player.GetNode<MultiplayerSynchronizer>("MovementComponent/PlayerInput");
+				playerInput.PublicVisibility = false;
+			}
+
+			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+
+			if (Multiplayer.IsServer()) { 
+				Node level = GetNode("LevelContainer");
+				foreach (Node child in level.GetChildren())
+				{
+					level.RemoveChild(child);
+					child.QueueFree();
+				}
+			}
+
+			GetNode<Control>("MainMenu").Show();
+			GetNode<Control>("Lobby").Show();
+
+
+			foreach (PlayerInfo playerInfo in Players.Values)
+			{
+				playerInfo.Score.Clear();
+				playerInfo.GameOver = false;
+				playerInfo.Role = PlayerInfo.PlayerRole.None;
+			}
+			await ToSignal(GetTree().CreateTimer(1.0), SceneTreeTimer.SignalName.Timeout);
+			SendPlayerInfo(); // would need to disconect from refreshCounter
+			GetTree().Paused = false;
+		}
+		else {
+			SetPlayerRoles();
+			SendPlayerInfo();
+			if(Multiplayer.IsServer())
+			{
+				CallDeferred(nameof(ChangeLevel), ResourceLoader.Load<PackedScene>("res://Level.tscn"));
+			}
+			GetTree().Paused = false;
+		}
+
+
+
+
+
+	}
+	
+
+
+
 }

@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=3 uid="uid://dtlwvuy5b6hb6"]
+
+[ext_resource type="Script" path="res://UI/RoundCounter.cs" id="1_5i20a"]
+[ext_resource type="Texture2D" uid="uid://b7i7frfysiy8e" path="res://art/tiny_win.png" id="1_wjl3r"]
+[ext_resource type="Texture2D" uid="uid://dqaa43ukmqb2" path="res://art/tiny_empty.png" id="2_207wy"]
+[ext_resource type="Texture2D" uid="uid://c0utc1qhbxheq" path="res://art/tiny_lost.png" id="4_7ndci"]
+
+[node name="RoundCounter" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_5i20a")
+roundTexture = ExtResource("2_207wy")
+victoryTexture = ExtResource("1_wjl3r")
+defeatTexture = ExtResource("4_7ndci")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+offset_right = 18.0
+offset_bottom = 18.0
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TextureRect" type="TextureRect" parent="MarginContainer/HBoxContainer"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("1_wjl3r")
+stretch_mode = 3

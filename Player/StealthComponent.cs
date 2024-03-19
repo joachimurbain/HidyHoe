@@ -5,19 +5,24 @@ public partial class StealthComponent : Node
 {
 
 	private int hidingPlacesCollision = 0;
-	private Player localPlayer;
+	private Player playerNode;
+
+	private MultiplayerController mainNode
+	{
+		get => FindParent("Main") as MultiplayerController;
+	}
 
 	public override void _Ready()
 	{
-		localPlayer = GetParent<Player>();
+		playerNode = GetParent<Player>();
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
-		if (Multiplayer.IsServer())
+		if (Multiplayer.IsServer()) // WHAT ? is this old debug stuff ?
 		{
-			localPlayer.IsVisible = localPlayer.IsSpotted || !(localPlayer.IsCrouching && IsInHiding());
+			playerNode.IsVisible = playerNode.IsSpotted || !(playerNode.IsCrouching && IsInHiding());
 		}
 
 		Rpc(nameof(UpdatePlayerVisibility));
@@ -31,36 +36,28 @@ public partial class StealthComponent : Node
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
 	private void UpdatePlayerVisibility()
 	{
-		AnimatedSprite2D localPlayerSprite = localPlayer.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+		AnimatedSprite2D playerNodeSprite = playerNode.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
 
-		if(localPlayerSprite == null)
+		if(playerNodeSprite == null)
 		{
 			return;
 		}
 
-		Color modulateColor = localPlayerSprite.Modulate;
-		Player clientContext = FindParent("Players").GetNodeOrNull<Player>(Multiplayer.GetUniqueId().ToString());
-
-		if (clientContext == null)
-		{
-			return;
-		}
-
-
-		if (clientContext.Role == localPlayer.Role && !localPlayer.IsVisible)
+		Color modulateColor = playerNodeSprite.Modulate;
+		if (mainNode.Players[Multiplayer.GetUniqueId()].Role == playerNode.Role && !playerNode.IsVisible)
 		{
 			modulateColor.A = 0.5f;
-			localPlayerSprite.Modulate = modulateColor;
+			playerNodeSprite.Modulate = modulateColor;
 		}
-		else if (!localPlayer.IsVisible)
+		else if (!playerNode.IsVisible)
 		{
 			modulateColor.A = 0.0f;
-			localPlayerSprite.Modulate = modulateColor;
+			playerNodeSprite.Modulate = modulateColor;
 		}
 		else
 		{
 			modulateColor.A = 1.0f;
-			localPlayerSprite.Modulate = modulateColor;
+			playerNodeSprite.Modulate = modulateColor;
 		}
 		//TODO TWEEN THIS SHIT UP
 	}

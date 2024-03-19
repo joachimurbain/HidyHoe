@@ -6,11 +6,14 @@ public partial class VisionComponent : Node
 
 	[Export]
 	public float SpottedDelay = 3.0f;
-	private Player localPlayer
+	private Player playerNode
 	{
 		get => GetParent<Player>();
 	}
-
+	private MultiplayerController mainNode
+	{
+		get => FindParent("Main") as MultiplayerController;
+	}
 	public override void _Ready()
 	{
 		
@@ -29,7 +32,8 @@ public partial class VisionComponent : Node
 		var players = GetTree().GetNodesInGroup("Players");
 		foreach (Player player in players)
 		{
-			if (localPlayer.Role == player.Role)
+			//playerNode.Role != PlayerInfo.PlayerRole.Seeker ||
+			if (playerNode.Role == player.Role)
 			{
 				continue;
 			}
@@ -38,6 +42,9 @@ public partial class VisionComponent : Node
 			if (HasClearLineOfSight(rayCast))
 			{
 				Spotted(player);
+				if(player.Role == PlayerInfo.PlayerRole.Hider) {
+					mainNode.EndRound(Globals.RoundOutcome.SeekerVictory);
+				}
 			}
 		}
 	}
@@ -63,8 +70,8 @@ public partial class VisionComponent : Node
 
 	private void UpdateRayCast(RayCast2D rayCast, Player player)
 	{
-		rayCast.Position = localPlayer.GlobalPosition;
-		rayCast.TargetPosition = -1 * player.ToLocal(localPlayer.GlobalPosition);
+		rayCast.Position = playerNode.GlobalPosition;
+		rayCast.TargetPosition = -1 * player.ToLocal(playerNode.GlobalPosition);
 	}
 	private bool HasClearLineOfSight(RayCast2D rayCast)
 	{
@@ -93,7 +100,7 @@ public partial class VisionComponent : Node
 
 	public void OnSpottedTimerTimeout()
 	{
-		localPlayer.IsSpotted = false;
+		playerNode.IsSpotted = false;
 	}
 
 }

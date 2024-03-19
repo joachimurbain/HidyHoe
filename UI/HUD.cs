@@ -8,6 +8,7 @@ public partial class HUD : CanvasLayer
 		get => GetParent<Player>();
 	}
 
+	private bool initialized = false;
 
 	public override void _Ready()
 	{
@@ -17,8 +18,9 @@ public partial class HUD : CanvasLayer
 
 	public override void _Process(double delta)
 	{
-		if(!Visible)
+		if(!initialized)
 		{
+			initialized = true;
 			Show();
 		}
 		GetNode<ProgressBar>("Stamina/ProgressBar").Value = localPlayer.CurrentStamina;

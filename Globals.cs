@@ -3,12 +3,7 @@ using System.Collections.Generic;
 
 public partial class Globals : Node
 {
-	public enum PlayerRole
-	{
-		None,
-		Seeker,
-		Hider
-	}
+
 
 	public enum PlayerAnimation
 	{
@@ -16,4 +11,10 @@ public partial class Globals : Node
 		Walk,
 	}
 
+	public enum RoundOutcome
+	{
+		SeekerVictory,
+		HiderVictory,
+		Draw
+	}
 }

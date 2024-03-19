@@ -1,12 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://bobleyduhanix"]
+[gd_scene load_steps=5 format=3 uid="uid://b3dn6wk54mlk4"]
 
-[ext_resource type="Theme" uid="uid://4f6g8umc5sa4" path="res://UI/Theme_1.tres" id="1_cx5x4"]
-[ext_resource type="Script" path="res://UI/Lobby.cs" id="1_hqpl0"]
-
-[sub_resource type="LabelSettings" id="LabelSettings_wrnep"]
-font_size = 32
-shadow_size = 5
-shadow_color = Color(0.184314, 0.317647, 0.337255, 1)
+[ext_resource type="Script" path="res://UI/Lobby.cs" id="1_ysvbr"]
+[ext_resource type="Theme" uid="uid://4f6g8umc5sa4" path="res://UI/Theme_1.tres" id="2_e8wl0"]
+[ext_resource type="Resource" uid="uid://dcy4n4eawdo57" path="res://GameModes/Bo3.tres" id="2_mg8ob"]
+[ext_resource type="Resource" uid="uid://bi3yujtfiqd63" path="res://GameModes/Bo5.tres" id="3_loof8"]
 
 [node name="Lobby" type="Control"]
 layout_mode = 3
@@ -15,7 +12,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_hqpl0")
+script = ExtResource("1_ysvbr")
+gameModes = Array[Object]([ExtResource("2_mg8ob"), ExtResource("3_loof8")])
 
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
@@ -24,94 +22,88 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.207843, 0.431373, 0.435294, 1)
+color = Color(0.184314, 0.317647, 0.337255, 0.67451)
 
-[node name="HostButton" type="Button" parent="."]
-layout_mode = 2
-offset_left = 832.0
-offset_top = 32.0
-offset_right = 933.0
-offset_bottom = 64.0
-grow_horizontal = 0
-theme = ExtResource("1_cx5x4")
-theme_override_font_sizes/font_size = 0
-text = "Host Game"
-
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -228.0
-offset_top = -105.5
-offset_right = 228.0
-offset_bottom = 105.5
+offset_left = -150.0
+offset_top = -150.0
+offset_right = 150.0
+offset_bottom = 150.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_e8wl0")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+[node name="ColorRect" type="ColorRect" parent="PanelContainer"]
+layout_mode = 2
+color = Color(0.184314, 0.317647, 0.337255, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/CenterContainer"]
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="Label" type="Label" parent="CenterContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="PanelContainer/CenterContainer/VBoxContainer"]
 layout_mode = 2
-theme = ExtResource("1_cx5x4")
-text = "Lobby"
-label_settings = SubResource("LabelSettings_wrnep")
+theme = ExtResource("2_e8wl0")
+text = "Waiting Room"
 horizontal_alignment = 1
 
-[node name="GridContainer" type="GridContainer" parent="CenterContainer/VBoxContainer"]
+[node name="ItemList" type="ItemList" parent="PanelContainer/CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
-theme_override_constants/v_separation = 15
-columns = 2
+auto_height = true
+item_count = 4
+same_column_width = true
+fixed_column_width = 200
+icon_mode = 0
+item_0/text = "Player 1"
+item_0/selectable = false
+item_1/text = "Player 2"
+item_1/selectable = false
+item_2/text = "Player 3"
+item_2/selectable = false
+item_3/text = "Player 4"
+item_3/selectable = false
 
-[node name="NameLabel" type="Label" parent="CenterContainer/VBoxContainer/GridContainer"]
+[node name="ReadyButton" type="Button" parent="PanelContainer/CenterContainer/VBoxContainer"]
 layout_mode = 2
-theme = ExtResource("1_cx5x4")
-text = "Name :"
+text = "Ready
+"
 
-[node name="NameLineEdit" type="LineEdit" parent="CenterContainer/VBoxContainer/GridContainer"]
-custom_minimum_size = Vector2(350, 0)
+[node name="CancelButton" type="Button" parent="PanelContainer/CenterContainer/VBoxContainer"]
+visible = false
 layout_mode = 2
-theme = ExtResource("1_cx5x4")
-placeholder_text = "Enter Name"
-alignment = 1
+text = "Cancel
+"
 
-[node name="AddressLabel" type="Label" parent="CenterContainer/VBoxContainer/GridContainer"]
+[node name="GamemodeDropDown" type="OptionButton" parent="."]
 layout_mode = 2
-theme = ExtResource("1_cx5x4")
-text = "IP Address :"
+offset_left = 330.0
+offset_top = 120.0
+offset_right = 375.0
+offset_bottom = 140.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
 
-[node name="AddressLineEdit" type="LineEdit" parent="CenterContainer/VBoxContainer/GridContainer"]
-custom_minimum_size = Vector2(350, 0)
+[node name="CloseButton" type="Button" parent="."]
 layout_mode = 2
-theme = ExtResource("1_cx5x4")
-placeholder_text = "Enter IP Address"
-alignment = 1
+offset_left = 598.0
+offset_top = 120.0
+offset_right = 630.0
+offset_bottom = 152.0
+grow_horizontal = 0
+grow_vertical = 2
+text = "X"
 
-[node name="PortLabel" type="Label" parent="CenterContainer/VBoxContainer/GridContainer"]
-layout_mode = 2
-theme = ExtResource("1_cx5x4")
-text = "Port :"
-
-[node name="PortLineEdit" type="LineEdit" parent="CenterContainer/VBoxContainer/GridContainer"]
-custom_minimum_size = Vector2(350, 0)
-layout_mode = 2
-theme = ExtResource("1_cx5x4")
-placeholder_text = "Enter Port"
-alignment = 1
-
-[node name="JoinButton" type="Button" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
-theme = ExtResource("1_cx5x4")
-text = "Join Game"
-
-[connection signal="button_down" from="HostButton" to="." method="OnHostButtonDown"]
-[connection signal="pressed" from="HostButton" to="." method="HostGame"]
-[connection signal="text_changed" from="CenterContainer/VBoxContainer/GridContainer/NameLineEdit" to="." method="OnNameChange"]
-[connection signal="text_changed" from="CenterContainer/VBoxContainer/GridContainer/AddressLineEdit" to="." method="OnAddressChange"]
-[connection signal="text_changed" from="CenterContainer/VBoxContainer/GridContainer/PortLineEdit" to="." method="OnPortChange"]
-[connection signal="button_down" from="CenterContainer/VBoxContainer/JoinButton" to="." method="OnJoinButtonDown"]
-[connection signal="pressed" from="CenterContainer/VBoxContainer/JoinButton" to="." method="JoinGame"]
+[connection signal="button_down" from="PanelContainer/CenterContainer/VBoxContainer/ReadyButton" to="." method="OnReadyButtonDown"]
+[connection signal="button_down" from="PanelContainer/CenterContainer/VBoxContainer/CancelButton" to="." method="OnCancelButtonDown"]
+[connection signal="item_selected" from="GamemodeDropDown" to="." method="OnGamemodeSelected"]
+[connection signal="button_down" from="CloseButton" to="." method="OnCloseButton"]

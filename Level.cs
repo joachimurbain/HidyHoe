@@ -11,37 +11,21 @@ public partial class Level : Node2D
 	[Export]
 	private PackedScene playerScene;
 	public static Vector2 ScreenSize;
+	private MultiplayerController mainNode
+	{
+		get => FindParent("Main") as MultiplayerController;
+	}
 	public override void _Ready()
 	{
 		SetPlaygroundSize();
-
 		if (Multiplayer.IsServer())
 		{
 			Multiplayer.PeerConnected += AddPlayer;
 			Multiplayer.PeerDisconnected += RemovePlayer;
-			foreach(int id in Multiplayer.GetPeers()){
-				AddPlayer(id);
-			}
 
-			if (DisplayServer.GetName() != "headless")
+			foreach(int playerId in mainNode.Players.Keys)
 			{
-				AddPlayer(1);
-			}
-
-			Array<Node> players = GetTree().GetNodesInGroup("Players");
-			int seekerIndex = new Random().Next(players.Count);
-			int index = 0;
-			foreach (Player player in players)
-			{
-				if (index == seekerIndex)
-				{
-					player.Role = Globals.PlayerRole.Seeker;
-				}
-				else
-				{
-					player.Role = Globals.PlayerRole.Hider;
-				}
-				index++;
+				AddPlayer(playerId);
 			}
 		}
 	}

@@ -11,7 +11,7 @@ public partial class MovementComponent : Node
 	public float SprintSpeedMultiplier = 3f;
 
 
-	private PlayerInput input;
+	private PlayerInput input { get; set; }
 	private AnimatedSprite2D animatedSprite2D;
 	private float baseMovementSpeed;
 	private GpuParticles2D dustTrail;

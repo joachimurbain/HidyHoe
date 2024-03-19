@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GameMode" load_steps=2 format=3 uid="uid://bi3yujtfiqd63"]
+
+[ext_resource type="Script" path="res://GameModes/GameMode.cs" id="1_gawnc"]
+
+[resource]
+script = ExtResource("1_gawnc")
+Id = 1
+Name = "Best Of 5"
+AmountOfRounds = 5

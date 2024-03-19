@@ -1,0 +1,49 @@
+[gd_scene load_steps=3 format=3 uid="uid://dpy8syexn4bn4"]
+
+[ext_resource type="Theme" uid="uid://4f6g8umc5sa4" path="res://UI/Theme_1.tres" id="1_ulobe"]
+[ext_resource type="Script" path="res://UI/Countdown.cs" id="2_xxt6k"]
+
+[node name="CountDown" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 128.0
+offset_bottom = 32.0
+theme = ExtResource("1_ulobe")
+script = ExtResource("2_xxt6k")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="MinuteLabel" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "00:"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="SecondLabel" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "00:"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="MsecLabel" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "000"
+horizontal_alignment = 2
+vertical_alignment = 1

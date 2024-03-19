@@ -1,0 +1,115 @@
+[gd_scene load_steps=4 format=3 uid="uid://bobleyduhanix"]
+
+[ext_resource type="Script" path="res://UI/MainMenu.cs" id="1_1pd1s"]
+[ext_resource type="Theme" uid="uid://4f6g8umc5sa4" path="res://UI/Theme_1.tres" id="1_cx5x4"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_wrnep"]
+font_size = 32
+shadow_size = 5
+shadow_color = Color(0.184314, 0.317647, 0.337255, 1)
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1pd1s")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.207843, 0.431373, 0.435294, 1)
+
+[node name="HostButton" type="Button" parent="."]
+layout_mode = 2
+offset_left = 832.0
+offset_top = 32.0
+offset_right = 933.0
+offset_bottom = 64.0
+grow_horizontal = 0
+theme = ExtResource("1_cx5x4")
+theme_override_font_sizes/font_size = 0
+text = "Host Game"
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -228.0
+offset_top = -105.5
+offset_right = 228.0
+offset_bottom = 105.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("1_cx5x4")
+text = "Hidey Hoe"
+label_settings = SubResource("LabelSettings_wrnep")
+horizontal_alignment = 1
+
+[node name="GridContainer" type="GridContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/v_separation = 15
+columns = 2
+
+[node name="NameLabel" type="Label" parent="CenterContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+theme = ExtResource("1_cx5x4")
+text = "Name :"
+
+[node name="NameLineEdit" type="LineEdit" parent="CenterContainer/VBoxContainer/GridContainer"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+theme = ExtResource("1_cx5x4")
+placeholder_text = "Enter Name"
+alignment = 1
+
+[node name="AddressLabel" type="Label" parent="CenterContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+theme = ExtResource("1_cx5x4")
+text = "IP Address :"
+
+[node name="AddressLineEdit" type="LineEdit" parent="CenterContainer/VBoxContainer/GridContainer"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+theme = ExtResource("1_cx5x4")
+placeholder_text = "Enter IP Address"
+alignment = 1
+
+[node name="PortLabel" type="Label" parent="CenterContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+theme = ExtResource("1_cx5x4")
+text = "Port :"
+
+[node name="PortLineEdit" type="LineEdit" parent="CenterContainer/VBoxContainer/GridContainer"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+theme = ExtResource("1_cx5x4")
+placeholder_text = "Enter Port"
+alignment = 1
+
+[node name="JoinButton" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("1_cx5x4")
+text = "Join Game"
+
+[connection signal="button_down" from="HostButton" to="." method="OnHostButtonDown"]
+[connection signal="text_changed" from="CenterContainer/VBoxContainer/GridContainer/NameLineEdit" to="." method="OnNameChange"]
+[connection signal="text_changed" from="CenterContainer/VBoxContainer/GridContainer/AddressLineEdit" to="." method="OnAddressChange"]
+[connection signal="text_changed" from="CenterContainer/VBoxContainer/GridContainer/PortLineEdit" to="." method="OnPortChange"]
+[connection signal="button_down" from="CenterContainer/VBoxContainer/JoinButton" to="." method="OnJoinButtonDown"]

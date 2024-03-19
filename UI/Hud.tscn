@@ -1,7 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://b1x218qdi7i0c"]
+[gd_scene load_steps=8 format=3 uid="uid://b1x218qdi7i0c"]
 
 [ext_resource type="Script" path="res://UI/HUD.cs" id="1_ibxwf"]
 [ext_resource type="FontFile" uid="uid://12magxlav4r2" path="res://fonts/Xolonium-Regular.ttf" id="2_ww3bg"]
+[ext_resource type="PackedScene" uid="uid://dpy8syexn4bn4" path="res://UI/Countdown.tscn" id="3_0iurc"]
+[ext_resource type="PackedScene" uid="uid://dtlwvuy5b6hb6" path="res://UI/RoundCounter.tscn" id="4_vch4e"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_han8c"]
 font = ExtResource("2_ww3bg")
@@ -30,7 +32,7 @@ corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
-[node name="HUD" type="CanvasLayer"]
+[node name="HUD" type="CanvasLayer" groups=["HUD"]]
 script = ExtResource("1_ibxwf")
 
 [node name="Message" type="Label" parent="."]
@@ -72,5 +74,15 @@ step = 1.0
 value = 50.0
 rounded = true
 show_percentage = false
+
+[node name="CountDown" parent="." instance=ExtResource("3_0iurc")]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -64.0
+offset_right = 64.0
+grow_horizontal = 2
+
+[node name="RoundCounter" parent="." instance=ExtResource("4_vch4e")]
 
 [connection signal="timeout" from="MessageTimer" to="." method="OnMessageTimerTimeout"]
