@@ -95,14 +95,14 @@ public partial class Lobby : Control
 	{
 		readyButton.Visible = false;
 		cancelButton.Visible = true;
-		RpcId(1, nameof(OnPlayerReadyCheck), 1);
+		mainNode.RpcId(1, nameof(Main.OnPlayerReadyCheck), 1);
 	}
 
 	public void OnCancelButtonDown()
 	{
 		readyButton.Visible = true;
 		cancelButton.Visible = false;
-		RpcId(1, nameof(OnPlayerReadyCheck), -1);
+		mainNode.RpcId(1, nameof(Main.OnPlayerReadyCheck), -1);
 	}
 
 	public override void _ExitTree()
@@ -111,18 +111,6 @@ public partial class Lobby : Control
 		base._ExitTree();
 	}
 
-	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
-	public void OnPlayerReadyCheck(int inc)
-	{
-		if (Multiplayer.IsServer())
-		{
-			playerReadyCount += inc;
-			if (playerReadyCount == mainNode.Players.Count)
-			{
 
-				mainNode.Rpc(nameof(mainNode.StartGame));
-			}
-		}
-	}
 
 }

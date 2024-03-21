@@ -22,14 +22,31 @@ public partial class Main : Node
 		StartGame();
 	}
 
+	private int playerReadyCount = 0;
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+	public void OnPlayerReadyCheck(int inc)
+	{
+		if (Multiplayer.IsServer())
+		{
+			playerReadyCount += inc;
+			if (playerReadyCount == Players.Count)
+			{
+				Rpc(nameof(StartGame));
+			}
+		}
+	}
+
 	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
 	public void StartGame()
 	{
 
 		GetNode<Control>("MultiplayerManager/MainMenu").Hide();
-		Lobby lobby = (Lobby)GetNode<Control>("MultiplayerManager/Lobby");
-		lobby.Hide();
-		lobby.OnCancelButtonDown();
+		Lobby lobby = (Lobby)GetNodeOrNull<Control>("MultiplayerManager/Lobby");
+		if (lobby != null) { 
+			lobby.Hide();
+			lobby.OnCancelButtonDown();
+		}
+
 		GetTree().Paused = false;
 		if (Multiplayer.IsServer())
 		{

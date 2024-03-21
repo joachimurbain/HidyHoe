@@ -25,6 +25,7 @@ public partial class MultiplayerManager : Node
 
 		if (DisplayServer.GetName() == "headless")
 		{
+			GD.Print("Headless Mode !");
 			CallDeferred(nameof(HostGame));
 		}
 	}
