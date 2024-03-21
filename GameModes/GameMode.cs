@@ -7,6 +7,7 @@ public partial class GameMode : Resource
 	[Export] public GameModeId Id { get; set; }
 	[Export] public string Name { get; set; }
 	[Export] public int AmountOfRounds { get; set; }
+	[Export] public double RoundDuration { get; set; }
 }
 
 public enum GameModeId

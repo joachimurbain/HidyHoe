@@ -10,9 +10,9 @@ public partial class VisionComponent : Node
 	{
 		get => GetParent<Player>();
 	}
-	private MultiplayerController mainNode
+	private Main mainNode
 	{
-		get => FindParent("Main") as MultiplayerController;
+		get => FindParent("Main") as Main;
 	}
 	public override void _Ready()
 	{

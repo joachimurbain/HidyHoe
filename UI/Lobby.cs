@@ -1,46 +1,58 @@
 using Godot;
 using Godot.Collections;
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
+using static Godot.Projection;
 
 public partial class Lobby : Control
 {
 
-	[Signal]
-	public delegate void ReadyButtonDownEventHandler();
-	[Signal]
-	public delegate void CancelButtonDownEventHandler();
-	[Signal]
-	public delegate void GamemodeSelectedEventHandler();
+	//[Signal]
+	//public delegate void ReadyButtonDownEventHandler(int inc);
+	//[Signal]
+	////public delegate void CancelButtonDownEventHandler(int inc);
+	//[Signal]
+	//public delegate void GamemodeSelectedEventHandler(GameMode gameMode);
 
 	[Export]
 	private GameMode[] gameModes;
 
+	private int playerReadyCount = 0;
 	private ItemList playerList;
-	private MultiplayerController mainNode;
-
+	private Main mainNode;
 	private Button readyButton;
 	private Button cancelButton;
-
-	private OptionButton gamemodeDropDown;
+	private OptionButton gameModeDropDown;
 	public override void _Ready()
 	{
 		playerList = FindChild("ItemList") as ItemList;
 		playerList.Clear();
-		mainNode = FindParent("Main") as MultiplayerController;
+		mainNode = FindParent("Main") as Main;
 		readyButton = FindChild("ReadyButton") as Button;
 		cancelButton = FindChild("CancelButton") as Button;
 
+		mainNode.PlayerListUpdate += RefreshPlayers;
+
+		mainNode.GameMode = gameModes[0];
+
+
 		RefreshPlayers();
-		// Make the drop down visible only for host/first or make it a vote?
-		if (Multiplayer.IsServer()) { 
-			gamemodeDropDown = FindChild("GamemodeDropDown") as OptionButton;
+		gameModeDropDown = FindChild("GameModeDropDown") as OptionButton;
+		if (Multiplayer.IsServer())
+		{
 			for (int i = 0; i < gameModes.Length; i++)
 			{
-				gamemodeDropDown.AddItem(gameModes[i].Name);
+				gameModeDropDown.AddItem(gameModes[i].Name);
 			}
-			OnGamemodeSelected(0);
+			OnGameModeSelected(0);
 		}
+		else { 
+			gameModeDropDown.Visible= false;
+		}
+
+
 	}
 
 	public override void _Process(double delta)
@@ -49,19 +61,25 @@ public partial class Lobby : Control
 
 	public void OnCloseButton()
 	{
-		if((FindChild("CancelButton") as Button).Visible)
+		if ((FindChild("CancelButton") as Button).Visible)
 		{
-			EmitSignal(SignalName.CancelButtonDown, -1);
+			OnCancelButtonDown();
 		}
 		mainNode.PlayerDisconnect(Multiplayer.GetUniqueId());
 		QueueFree();
 	}
 
-	public void OnGamemodeSelected(int index)
-	{	
-		EmitSignal(SignalName.GamemodeSelected, gameModes[index]);
+	public void OnGameModeSelected(int index)
+	{
+		Rpc(nameof(SetGameMode), index);
 	}
 
+	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	public void SetGameMode(int index)
+	{
+		mainNode.GameMode = gameModes[index];
+		GD.Print(mainNode.GameMode.Name);
+	}
 
 	public void RefreshPlayers()
 	{
@@ -75,25 +93,36 @@ public partial class Lobby : Control
 
 	public void OnReadyButtonDown()
 	{
-		EmitSignal(SignalName.ReadyButtonDown,1);
-		ToggleReadinessButton();
-
+		readyButton.Visible = false;
+		cancelButton.Visible = true;
+		RpcId(1, nameof(OnPlayerReadyCheck), 1);
 	}
 
 	public void OnCancelButtonDown()
 	{
-		EmitSignal(SignalName.CancelButtonDown,-1);
-		ToggleReadinessButton();
-
+		readyButton.Visible = true;
+		cancelButton.Visible = false;
+		RpcId(1, nameof(OnPlayerReadyCheck), -1);
 	}
 
-
-	private void ToggleReadinessButton()
+	public override void _ExitTree()
 	{
-
-
-
-		readyButton.Visible = !readyButton.Visible;
-		cancelButton.Visible = !cancelButton.Visible;
+		mainNode.PlayerListUpdate -= RefreshPlayers;
+		base._ExitTree();
 	}
+
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+	public void OnPlayerReadyCheck(int inc)
+	{
+		if (Multiplayer.IsServer())
+		{
+			playerReadyCount += inc;
+			if (playerReadyCount == mainNode.Players.Count)
+			{
+
+				mainNode.Rpc(nameof(mainNode.StartGame));
+			}
+		}
+	}
+
 }

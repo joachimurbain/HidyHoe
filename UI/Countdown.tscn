@@ -3,7 +3,7 @@
 [ext_resource type="Theme" uid="uid://4f6g8umc5sa4" path="res://UI/Theme_1.tres" id="1_ulobe"]
 [ext_resource type="Script" path="res://UI/Countdown.cs" id="2_xxt6k"]
 
-[node name="CountDown" type="Control"]
+[node name="Countdown" type="Control"]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 128.0

@@ -12,7 +12,7 @@
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_sd7fr"]
 properties/0/path = NodePath(".:PlayerId")
 properties/0/spawn = true
-properties/0/replication_mode = 0
+properties/0/replication_mode = 2
 properties/1/path = NodePath(".:position")
 properties/1/spawn = true
 properties/1/replication_mode = 1
@@ -56,7 +56,7 @@ height = 27.0
 script = ExtResource("1_26ey4")
 metadata/_edit_group_ = true
 
-[node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+[node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="." groups=["Multiplayer Synchronizer"]]
 replication_config = SubResource("SceneReplicationConfig_sd7fr")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]

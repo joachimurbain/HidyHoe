@@ -11,9 +11,9 @@ public partial class Level : Node2D
 	[Export]
 	private PackedScene playerScene;
 	public static Vector2 ScreenSize;
-	private MultiplayerController mainNode
+	private Main mainNode
 	{
-		get => FindParent("Main") as MultiplayerController;
+		get => FindParent("Main") as Main;
 	}
 	public override void _Ready()
 	{

@@ -7,9 +7,9 @@ public partial class StealthComponent : Node
 	private int hidingPlacesCollision = 0;
 	private Player playerNode;
 
-	private MultiplayerController mainNode
+	private Main mainNode
 	{
-		get => FindParent("Main") as MultiplayerController;
+		get => FindParent("Main") as Main;
 	}
 
 	public override void _Ready()

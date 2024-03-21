@@ -1,21 +1,16 @@
 [gd_scene load_steps=4 format=3 uid="uid://ucv8wyn8lrwc"]
 
-[ext_resource type="Script" path="res://MultiplayerController.cs" id="1_2phjm"]
+[ext_resource type="Script" path="res://Main.cs" id="1_2phjm"]
+[ext_resource type="Script" path="res://MultiplayerManager.cs" id="2_ekwcx"]
 [ext_resource type="PackedScene" uid="uid://bobleyduhanix" path="res://UI/MainMenu.tscn" id="2_uvq2t"]
-
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_fqpl2"]
-properties/0/path = NodePath(".:PlayerReadyCount")
-properties/0/spawn = true
-properties/0/replication_mode = 2
-properties/1/path = NodePath(".:GameModeId")
-properties/1/spawn = true
-properties/1/replication_mode = 2
 
 [node name="Main" type="Node"]
 script = ExtResource("1_2phjm")
 
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
-replication_config = SubResource("SceneReplicationConfig_fqpl2")
+[node name="MultiplayerManager" type="Node" parent="."]
+script = ExtResource("2_ekwcx")
+
+[node name="MainMenu" parent="MultiplayerManager" instance=ExtResource("2_uvq2t")]
 
 [node name="LevelContainer" type="Node" parent="."]
 
@@ -24,7 +19,5 @@ _spawnable_scenes = PackedStringArray("res://Level.tscn")
 spawn_path = NodePath("../LevelContainer")
 spawn_limit = 1
 
-[node name="MainMenu" parent="." instance=ExtResource("2_uvq2t")]
-
-[connection signal="HostButtonPressed" from="MainMenu" to="." method="OnHostButtonDown"]
-[connection signal="JoinButtonPressed" from="MainMenu" to="." method="OnJoinButtonDown"]
+[connection signal="HostButtonPressed" from="MultiplayerManager/MainMenu" to="MultiplayerManager" method="OnHostButtonDown"]
+[connection signal="JoinButtonPressed" from="MultiplayerManager/MainMenu" to="MultiplayerManager" method="OnJoinButtonDown"]

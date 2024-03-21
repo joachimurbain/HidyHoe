@@ -4,11 +4,9 @@ using System;
 
 public partial class Countdown : Control
 {
-	//[Signal]
-	//public delegate void OnCountdownTimeoutEventHandler();
 
-	[Export]
-	public double time =2;
+
+	private double time =30;
 	private int minutes = 0;
 	private int seconds = 0;
 	private int msec = 0;
@@ -16,18 +14,19 @@ public partial class Countdown : Control
 	private Label minutesNode;
 	private Label secondsNode;
 	private Label msecNode;
-	private MultiplayerController mainNode
+	private Main mainNode
 	{
-		get => FindParent("Main") as MultiplayerController;
+		get => FindParent("Main") as Main;
 	}
 
 	public override void _Ready()
 	{
-
 		minutesNode = FindChild("MinuteLabel") as Label;
 		secondsNode = FindChild("SecondLabel") as Label;
 		msecNode = FindChild("MsecLabel") as Label;
-		SetProcess(GetNode<Player>("../../").PlayerId == Multiplayer.GetUniqueId());
+
+		time = mainNode.GameMode.RoundDuration;
+
 	}
 
 	public override void _Process(double delta)

@@ -16,7 +16,8 @@ public partial class MainMenu : Control
 
 	public override void _Ready()
 	{
-		MultiplayerController main = GetParent<MultiplayerController>();
+
+		MultiplayerManager main = GetParent<MultiplayerManager>();
 		address = main.Address;	
 		(FindChild("AddressLineEdit") as LineEdit).Text = address;
 		port = main.Port;

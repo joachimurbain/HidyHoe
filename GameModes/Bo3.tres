@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_f44vj")
-Name = "Best Of 3"
 Id = 0
+Name = "Best Of 3"
 AmountOfRounds = 3
+RoundDuration = 5.0

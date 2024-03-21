@@ -24,9 +24,9 @@ public partial class Player : CharacterBody2D
 	}
 	private int _playerId = 1;
 
-	private MultiplayerController mainNode
+	private Main mainNode
 	{
-		get => FindParent("Main") as MultiplayerController;
+		get => FindParent("Main") as Main;
 	}
 
 	[Export]
@@ -42,6 +42,8 @@ public partial class Player : CharacterBody2D
 	public override void _Ready()
 	{
 		Role = mainNode.Players[PlayerId].Role;
+		GetNode<Control>("HUD/Countdown").SetProcess(PlayerId == Multiplayer.GetUniqueId());
+		GetNode<Control>("HUD/RoundCounter").SetProcess(PlayerId == Multiplayer.GetUniqueId());
 	}
 
 
@@ -49,6 +51,10 @@ public partial class Player : CharacterBody2D
 	{
 		_playerId = playerId;
 		GetNode<PlayerInput>("MovementComponent/PlayerInput").SetMultiplayerAuthority(playerId);
+		//if(Multiplayer != null)
+		//{
+		//	GetNode<Countdown>("HUD/Countdown").SetProcess(PlayerId == Multiplayer.GetUniqueId());
+		//}
 	}
 
 	public void SetRole(PlayerInfo.PlayerRole role)
