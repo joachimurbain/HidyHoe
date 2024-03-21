@@ -56,6 +56,11 @@ public partial class MultiplayerManager : Node
 			AddLobby();
 			mainNode.SendPlayerInformation((FindChild("NameLineEdit") as LineEdit).Text, 1);
 		}
+		else
+		{
+			GameMode gamemode = GD.Load<GameMode>("res://GameModes/Bo3.tres");
+			mainNode.GameMode = gamemode;
+		}
 	}
 
 	private void ConnectionFailed()
@@ -94,17 +99,6 @@ public partial class MultiplayerManager : Node
 	{
 		PackedScene scene = ResourceLoader.Load<PackedScene>("res://UI/Lobby.tscn");
 		Lobby lobby = scene.Instantiate() as Lobby;
-
-
-		//mainNode.PlayerListUpdate += lobby.RefreshPlayers;
-		//lobby.ReadyButtonDown += mainNode.OnPlayerReadyCheck;
-		//lobby.CancelButtonDown += mainNode.OnPlayerReadyCheck;
-		//lobby.GamemodeSelected += mainNode.OnGameModeSelected;
-
-		//mainNode.Connect(MultiplayerController.SignalName.PlayerListUpdate, new Callable(lobby, nameof(lobby.RefreshPlayers)));
-		//lobby.Connect(Lobby.SignalName.ReadyButtonDown, new Callable(this, nameof(mainNode.OnPlayerReadyCheck)));
-		//lobby.Connect(Lobby.SignalName.CancelButtonDown, new Callable(this, nameof(mainNode.OnPlayerReadyCheck)));
-		//lobby.Connect(Lobby.SignalName.GamemodeSelected, new Callable(this, nameof(mainNode.OnGameModeSelected)));
 		AddChild(lobby);
 	}
 }

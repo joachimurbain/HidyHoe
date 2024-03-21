@@ -105,6 +105,12 @@ public partial class Lobby : Control
 		mainNode.RpcId(1, nameof(Main.OnPlayerReadyCheck), -1);
 	}
 
+	public void ResetReadyButton()
+	{
+		readyButton.Visible = true;
+		cancelButton.Visible = false;
+	}
+
 	public override void _ExitTree()
 	{
 		mainNode.PlayerListUpdate -= RefreshPlayers;

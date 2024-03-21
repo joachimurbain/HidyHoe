@@ -37,7 +37,7 @@ public partial class RoundCounter : Control
 
 		public void RefreshCounter()
 	{
-		if (IsProcessing()) { 
+		if (IsProcessing() && mainNode.Players.ContainsKey(Multiplayer.GetUniqueId())) { 
 			PlayerInfo client = mainNode.Players[Multiplayer.GetUniqueId()];
 			for(int i = 0;i < client.Score.Count;i++)
 			{

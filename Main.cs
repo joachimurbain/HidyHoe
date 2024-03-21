@@ -44,8 +44,9 @@ public partial class Main : Node
 		Lobby lobby = (Lobby)GetNodeOrNull<Control>("MultiplayerManager/Lobby");
 		if (lobby != null) { 
 			lobby.Hide();
-			lobby.OnCancelButtonDown();
+			lobby.ResetReadyButton();
 		}
+		playerReadyCount=0;
 
 		GetTree().Paused = false;
 		if (Multiplayer.IsServer())

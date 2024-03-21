@@ -44,7 +44,7 @@ public partial class StealthComponent : Node
 		}
 
 		Color modulateColor = playerNodeSprite.Modulate;
-		if (mainNode.Players[Multiplayer.GetUniqueId()].Role == playerNode.Role && !playerNode.IsVisible)
+		if (mainNode.Players.ContainsKey(Multiplayer.GetUniqueId()) && mainNode.Players[Multiplayer.GetUniqueId()].Role == playerNode.Role && !playerNode.IsVisible)
 		{
 			modulateColor.A = 0.5f;
 			playerNodeSprite.Modulate = modulateColor;
