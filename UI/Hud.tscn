@@ -33,6 +33,7 @@ corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
 [node name="HUD" type="CanvasLayer" groups=["HUD"]]
+process_mode = 3
 script = ExtResource("1_ibxwf")
 
 [node name="Message" type="Label" parent="."]
@@ -76,6 +77,7 @@ rounded = true
 show_percentage = false
 
 [node name="Countdown" parent="." instance=ExtResource("3_0iurc")]
+process_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5

@@ -179,6 +179,7 @@ public partial class Main : Node
 		{
 			return;
 		}
+		Rpc(nameof(PauseGame));
 		int seekerScore = outcome == Globals.RoundOutcome.SeekerVictory ? 1 : 0;
 		int hiderScore = outcome == Globals.RoundOutcome.HiderVictory ? 1 : 0;
 		foreach (PlayerInfo playerInfo in Players.Values)
@@ -205,7 +206,6 @@ public partial class Main : Node
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
 	async private void GameOver()
 	{
-		GetTree().Paused = true;
 		Array<Node> playerNodes = GetTree().GetNodesInGroup("Players");
 		foreach (Player player in playerNodes)
 		{
@@ -280,7 +280,20 @@ public partial class Main : Node
 		{
 			await ToSignal(GetTree().CreateTimer(2.0), SceneTreeTimer.SignalName.Timeout);
 			CallDeferred(nameof(ChangeLevel), ResourceLoader.Load<PackedScene>("res://Level.tscn"));
+			Rpc(nameof(UnpauseGame));
 			playerReady = 0;
 		}
+	}
+
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	public void PauseGame()
+	{
+		GetTree().Paused = true;
+	}
+
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	public void UnpauseGame()
+	{
+		GetTree().Paused = false;
 	}
 }
