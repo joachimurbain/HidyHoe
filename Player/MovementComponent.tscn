@@ -41,6 +41,7 @@ anim_speed_max = 1.0
 
 [node name="MovementComponent" type="Node2D"]
 script = ExtResource("1_py8ds")
+metadata/_edit_group_ = true
 
 [node name="PlayerInput" type="MultiplayerSynchronizer" parent="." groups=["Multiplayer Synchronizer"]]
 root_path = NodePath(".")
@@ -59,3 +60,8 @@ lifetime = 1.2
 speed_scale = 0.6
 interpolate = false
 fract_delta = false
+
+[node name="SpeedBoostTimer" type="Timer" parent="."]
+one_shot = true
+
+[connection signal="timeout" from="SpeedBoostTimer" to="." method="OnSpeedBoostTimerTimeout"]
