@@ -4,3 +4,8 @@
 
 [node name="StaminaComponent" type="Node2D"]
 script = ExtResource("1_dgpom")
+
+[node name="DepletedStaminaTimer" type="Timer" parent="."]
+one_shot = true
+
+[connection signal="timeout" from="DepletedStaminaTimer" to="." method="OnDepletedStaminaTimerTimeout"]
