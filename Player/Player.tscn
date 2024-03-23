@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://0qd26hmxql40"]
+[gd_scene load_steps=13 format=3 uid="uid://0qd26hmxql40"]
 
 [ext_resource type="Script" path="res://Player/Player.cs" id="1_26ey4"]
 [ext_resource type="Texture2D" uid="uid://dmwo5lpissgws" path="res://art/playerGrey_up2.png" id="1_s2mnr"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://b1x218qdi7i0c" path="res://UI/Hud.tscn" id="5_oma22"]
 [ext_resource type="PackedScene" uid="uid://hhbdgp1owsk4" path="res://Player/MovementComponent.tscn" id="6_fnxyn"]
 [ext_resource type="PackedScene" uid="uid://h0ldiitrsso2" path="res://Player/StealthComponent.tscn" id="7_bb1eg"]
+[ext_resource type="PackedScene" uid="uid://cnu4nspi1bkk7" path="res://Player/CatchComponent.tscn" id="9_i5243"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_sd7fr"]
 properties/0/path = NodePath(".:PlayerId")
@@ -28,6 +29,12 @@ properties/4/replication_mode = 2
 properties/5/path = NodePath(".:IsCrouching")
 properties/5/spawn = false
 properties/5/replication_mode = 2
+properties/6/path = NodePath(".:IsBoosted")
+properties/6/spawn = false
+properties/6/replication_mode = 2
+properties/7/path = NodePath(".:IsInChaseMode")
+properties/7/spawn = false
+properties/7/replication_mode = 2
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_wqxvc"]
 animations = [{
@@ -48,9 +55,8 @@ animations = [{
 "speed": 5.0
 }]
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_72ggd"]
-radius = 13.5
-height = 27.0
+[sub_resource type="CircleShape2D" id="CircleShape2D_lxqtv"]
+radius = 14.0
 
 [node name="Player" type="CharacterBody2D" groups=["Players"]]
 script = ExtResource("1_26ey4")
@@ -68,16 +74,19 @@ animation = &"Walk"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -3)
 rotation = 1.5708
-shape = SubResource("CapsuleShape2D_72ggd")
+shape = SubResource("CircleShape2D_lxqtv")
 
 [node name="MovementComponent" parent="." instance=ExtResource("6_fnxyn")]
 position = Vector2(0, 17)
-SprintSpeedMultiplier = 2.0
 
 [node name="StaminaComponent" parent="." instance=ExtResource("4_e3e3e")]
 
 [node name="VisionComponent" parent="." instance=ExtResource("5_dn5mw")]
 
 [node name="StealthComponent" parent="." instance=ExtResource("7_bb1eg")]
+position = Vector2(0, -3)
+
+[node name="CatchComponent" parent="." instance=ExtResource("9_i5243")]
+position = Vector2(0, -3)
 
 [node name="HUD" parent="." instance=ExtResource("5_oma22")]

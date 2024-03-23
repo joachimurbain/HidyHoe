@@ -8,14 +8,17 @@ radius = 17.5183
 [node name="StealthComponent" type="Node2D"]
 script = ExtResource("1_uqev3")
 
+[node name="SpottedTimer" type="Timer" parent="."]
+one_shot = true
+
 [node name="HidingRadius" type="Area2D" parent="."]
 collision_layer = 128
 collision_mask = 128
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HidingRadius"]
-position = Vector2(0.2, -1.5)
 rotation = 1.5708
 shape = SubResource("CircleShape2D_54rtq")
 
+[connection signal="timeout" from="SpottedTimer" to="." method="OnSpottedTimerTimeout"]
 [connection signal="body_entered" from="HidingRadius" to="." method="OnEnteringHidingPlace"]
 [connection signal="body_exited" from="HidingRadius" to="." method="OnLeavingHidingPlace"]

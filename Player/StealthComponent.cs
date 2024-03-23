@@ -4,8 +4,13 @@ using System;
 public partial class StealthComponent : Node
 {
 
+
+	[Export]
+	public float SpottedDuration = 3.0f;
+
 	private int hidingPlacesCollision = 0;
 	private Player playerNode;
+	private Timer spottedTimer;
 
 	private Main mainNode
 	{
@@ -15,17 +20,24 @@ public partial class StealthComponent : Node
 	public override void _Ready()
 	{
 		playerNode = GetParent<Player>();
+		spottedTimer = GetNode<Timer>("SpottedTimer");
+
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
-		if (Multiplayer.IsServer()) // WHAT ? is this old debug stuff ?
+
+		if (Multiplayer.IsServer())
 		{
+			if (playerNode.IsSpotted && spottedTimer.IsStopped())
+			{
+				Spotted();
+			}
 			playerNode.IsVisible = playerNode.IsSpotted || !(playerNode.IsCrouching && IsInHiding());
+			Rpc(nameof(UpdatePlayerVisibility));
 		}
 
-		Rpc(nameof(UpdatePlayerVisibility));
 	}
 
 	private bool IsInHiding()
@@ -38,7 +50,7 @@ public partial class StealthComponent : Node
 	{
 		AnimatedSprite2D playerNodeSprite = playerNode.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
 
-		if(playerNodeSprite == null)
+		if (playerNodeSprite == null)
 		{
 			return;
 		}
@@ -77,4 +89,24 @@ public partial class StealthComponent : Node
 			hidingPlacesCollision--;
 		}
 	}
+
+
+	private void Spotted()
+	{
+		if (!spottedTimer.IsStopped())
+		{
+			spottedTimer.Stop();
+		}
+		spottedTimer.WaitTime = SpottedDuration;
+		spottedTimer.Start();
+		GD.Print("Starting Timer");
+	}
+
+	public void OnSpottedTimerTimeout()
+	{
+		GD.Print("Timeout spotted");
+		playerNode.IsSpotted = false;
+	}
+
+
 }

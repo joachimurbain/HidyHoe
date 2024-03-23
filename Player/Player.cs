@@ -15,6 +15,12 @@ public partial class Player : CharacterBody2D
 	[Export]
 	public bool IsRunning = false;
 	[Export]
+	public bool IsBoosted = false;
+
+	[Export]
+	public bool IsInChaseMode = false;
+
+	[Export]
 	public double CurrentStamina;
 	[Export]
 	public int PlayerId
@@ -44,6 +50,7 @@ public partial class Player : CharacterBody2D
 		Role = mainNode.Players[PlayerId].Role;
 		GetNode<Control>("HUD/Countdown").SetProcess(PlayerId == Multiplayer.GetUniqueId());
 		GetNode<Control>("HUD/RoundCounter").SetProcess(PlayerId == Multiplayer.GetUniqueId());
+		GetNode<Node2D>("CatchComponent").SetProcess(Role == PlayerInfo.PlayerRole.Seeker);
 	}
 
 

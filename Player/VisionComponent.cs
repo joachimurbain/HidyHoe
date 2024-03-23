@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Linq;
 
 public partial class VisionComponent : Node
 {
@@ -29,49 +30,54 @@ public partial class VisionComponent : Node
 
 	private void SetVision()
 	{
-		var players = GetTree().GetNodesInGroup("Players");
-		foreach (Player player in players)
+		var seekers = GetTree().GetNodesInGroup("Players").OfType<Player>().Where(player => player.Role == PlayerInfo.PlayerRole.Seeker);
+		var hiders = GetTree().GetNodesInGroup("Players").OfType<Player>().Where(player => player.Role == PlayerInfo.PlayerRole.Hider);
+		foreach (Player seeker in seekers)
 		{
-			//playerNode.Role != PlayerInfo.PlayerRole.Seeker ||
-			if (playerNode.Role == player.Role)
+
+			foreach(Player hider in hiders)
 			{
-				continue;
-			}
-			RayCast2D rayCast = GetOrSetRayCast(player);
-			UpdateRayCast(rayCast, player);
-			if (HasClearLineOfSight(rayCast))
-			{
-				Spotted(player);
-				if(player.Role == PlayerInfo.PlayerRole.Hider) {
-					mainNode.EndRound(Globals.RoundOutcome.SeekerVictory);
+				RayCast2D rayCast = GetOrSetRayCast(seeker,hider);
+				UpdateRayCast(rayCast, seeker,hider);
+
+				if (HasClearLineOfSight(rayCast))
+				{
+					seeker.IsInChaseMode = true;	
+					hider.IsSpotted = true;
+					seeker.IsSpotted = true;
+				}
+				else if (playerNode.Role == PlayerInfo.PlayerRole.Seeker)
+				{
+					playerNode.IsInChaseMode = false;
 				}
 			}
+
 		}
 	}
 
-	private RayCast2D GetOrSetRayCast(Player player)
+	private RayCast2D GetOrSetRayCast(Player seeker, Player hider)
 	{
-		RayCast2D rayCast = GetNodeOrNull<RayCast2D>("Raycast_" + player.Name);
+		RayCast2D rayCast = GetNodeOrNull<RayCast2D>("Raycast_" + seeker.PlayerId + "_" + hider.PlayerId);
 		if (rayCast == null)
 		{
-			rayCast = DrawRayCast(player);
+			rayCast = DrawRayCast(seeker, hider);
 		}
 		return rayCast;
 	}
-	private RayCast2D DrawRayCast(Player player)
+	private RayCast2D DrawRayCast(Player seeker, Player hider)
 	{
 		RayCast2D rayCast = new RayCast2D();
-		rayCast.Name = "Raycast_" + player.Name;
+		rayCast.Name = "Raycast_" + seeker.PlayerId + "_" + hider.PlayerId;
 		rayCast.TopLevel = true;
 		rayCast.Enabled = true;
 		AddChild(rayCast);
 		return rayCast;
 	}
 
-	private void UpdateRayCast(RayCast2D rayCast, Player player)
+	private void UpdateRayCast(RayCast2D rayCast, Player seeker, Player hider)
 	{
-		rayCast.Position = playerNode.GlobalPosition;
-		rayCast.TargetPosition = -1 * player.ToLocal(playerNode.GlobalPosition);
+		rayCast.Position = seeker.GlobalPosition;
+		rayCast.TargetPosition = -1 * hider.ToLocal(seeker.GlobalPosition);
 	}
 	private bool HasClearLineOfSight(RayCast2D rayCast)
 	{
@@ -85,22 +91,4 @@ public partial class VisionComponent : Node
 		}
 		return false;
 	}
-
-	private void Spotted(Player player)
-	{
-		Timer spottedTimer = player.GetNode<Timer>("VisionComponent/SpottedTimer");
-		player.IsSpotted = true;
-		if (!spottedTimer.IsStopped())
-		{
-			spottedTimer.Stop();
-		}
-		spottedTimer.WaitTime = SpottedDelay;
-		spottedTimer.Start();
-	}
-
-	public void OnSpottedTimerTimeout()
-	{
-		playerNode.IsSpotted = false;
-	}
-
 }

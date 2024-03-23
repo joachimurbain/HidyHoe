@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://cnu4nspi1bkk7"]
+
+[ext_resource type="Script" path="res://Player/CatchComponent.cs" id="1_5v62u"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_88h46"]
+radius = 0.01
+
+[node name="CatchComponent" type="Node2D"]
+script = ExtResource("1_5v62u")
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_88h46")
+disabled = true
+debug_color = Color(0.988235, 0, 0.282353, 0.419608)
+
+[connection signal="body_entered" from="Area2D" to="." method="OnCatchRadiusEntered"]
