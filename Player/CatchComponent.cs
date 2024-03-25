@@ -27,7 +27,7 @@ public partial class CatchComponent : Node
 	{
 		if (body is Player  && ((Player)body).Role == PlayerInfo.PlayerRole.Hider && ((Player)body).IsSpotted )
 		{
-			mainNode.EndRound(Globals.RoundOutcome.SeekerVictory);
+			mainNode.EndRound((int)Globals.RoundOutcome.SeekerVictory);
 		}
 	}
 

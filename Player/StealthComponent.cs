@@ -99,12 +99,10 @@ public partial class StealthComponent : Node
 		}
 		spottedTimer.WaitTime = SpottedDuration;
 		spottedTimer.Start();
-		GD.Print("Starting Timer");
 	}
 
 	public void OnSpottedTimerTimeout()
 	{
-		GD.Print("Timeout spotted");
 		playerNode.IsSpotted = false;
 	}
 

@@ -18,6 +18,7 @@ collision_mask = 128
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HidingRadius"]
 rotation = 1.5708
 shape = SubResource("CircleShape2D_54rtq")
+debug_color = Color(0.317647, 0.615686, 0.309804, 0.419608)
 
 [connection signal="timeout" from="SpottedTimer" to="." method="OnSpottedTimerTimeout"]
 [connection signal="body_entered" from="HidingRadius" to="." method="OnEnteringHidingPlace"]

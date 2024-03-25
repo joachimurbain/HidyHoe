@@ -2,15 +2,22 @@ using Godot;
 using Godot.Collections;
 using System;
 using System.Linq;
+using System.Reflection;
 
 public partial class Main : Node
 {
 
-	[Signal] 
+	[Signal]
 	public delegate void PlayerListUpdateEventHandler();
+
+	[Export]
+	public GameMode[] GameModes;
+
 	public GameMode GameMode { get; set; }
-	private int playerReady { get; set; } = 0;
 	public Dictionary<int, PlayerInfo> Players { get; set; } = new Dictionary<int, PlayerInfo>();
+	private int playerReady { get; set; } = 0;
+
+	private Dictionary<int, int> playerVotes = new Dictionary<int, int>();
 
 	public override void _Ready()
 	{
@@ -31,6 +38,7 @@ public partial class Main : Node
 			playerReadyCount += inc;
 			if (playerReadyCount == Players.Count)
 			{
+				GetMostVotedGameMode();
 				Rpc(nameof(StartGame));
 			}
 		}
@@ -42,11 +50,12 @@ public partial class Main : Node
 
 		GetNode<Control>("MultiplayerManager/MainMenu").Hide();
 		Lobby lobby = (Lobby)GetNodeOrNull<Control>("MultiplayerManager/Lobby");
-		if (lobby != null) { 
+		if (lobby != null)
+		{
 			lobby.Hide();
 			lobby.ResetReadyButton();
 		}
-		playerReadyCount=0;
+		playerReadyCount = 0;
 
 		GetTree().Paused = false;
 		if (Multiplayer.IsServer())
@@ -117,14 +126,15 @@ public partial class Main : Node
 		}
 		else
 		{
-			Players.Remove(playerId);
-			Multiplayer.MultiplayerPeer.DisconnectPeer(playerId);
+			Multiplayer.MultiplayerPeer.DisconnectPeer(playerId);	
 		}
 
 	}
 
+
+
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-	public void RequestPlayerInfos(string callback = "",int id = 0)
+	public void RequestPlayerInfos(string callback = "", int id = 0)
 	{
 		if (!Multiplayer.IsServer())
 		{
@@ -136,7 +146,7 @@ public partial class Main : Node
 		}
 	}
 
-	public void SendPlayerInfo(string callback = "",int id=0)
+	public void SendPlayerInfo(string callback = "", int id = 0)
 	{
 		if (!Multiplayer.IsServer())
 		{
@@ -148,13 +158,14 @@ public partial class Main : Node
 		{
 			playerinfos.Add(playerInfo.ToJsonString());
 		}
-		Rpc(nameof(ReceivePlayerInfo), playerinfos, callback,id);
+		Rpc(nameof(ReceivePlayerInfo), playerinfos, callback, id);
 
 	}
 
 	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
 	public void ReceivePlayerInfo(Array<string> jsonPlayerInfo, string callback, int id = 0)
 	{
+		Players.Clear();
 		for (int i = 0; i < jsonPlayerInfo.Count; i++)
 		{
 			PlayerInfo playerInfo = PlayerInfo.FromJsonString(jsonPlayerInfo[i]);
@@ -167,18 +178,24 @@ public partial class Main : Node
 			{
 				RpcId(id, callback);
 			}
-			else {
+			else
+			{
 				Rpc(callback);
 			}
 		}
 	}
 
-	public void EndRound(Globals.RoundOutcome outcome)
+
+	private bool endRoundExecuted = false;
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	public void EndRound(int index)
 	{
-		if (!Multiplayer.IsServer())
+		Globals.RoundOutcome outcome = (Globals.RoundOutcome)index;
+		if (endRoundExecuted || !Multiplayer.IsServer())
 		{
 			return;
 		}
+		endRoundExecuted = true;
 		Rpc(nameof(PauseGame));
 		int seekerScore = outcome == Globals.RoundOutcome.SeekerVictory ? 1 : 0;
 		int hiderScore = outcome == Globals.RoundOutcome.HiderVictory ? 1 : 0;
@@ -189,12 +206,12 @@ public partial class Main : Node
 		}
 		if (IsGameOver())
 		{
-			RequestPlayerInfos(nameof(GameOver));
+			SendPlayerInfo(nameof(GameOver));
 		}
 		else
 		{
 			SetPlayerRoles();
-			SendPlayerInfo(nameof(NextRound),1);
+			SendPlayerInfo(nameof(NextRound), 1);
 		}
 	}
 
@@ -204,7 +221,7 @@ public partial class Main : Node
 	}
 
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-	async private void GameOver()
+	async public void GameOver()
 	{
 		Array<Node> playerNodes = GetTree().GetNodesInGroup("Players");
 		foreach (Player player in playerNodes)
@@ -234,7 +251,7 @@ public partial class Main : Node
 
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
 	public void PrepareToReturnToLobby()
-	{	
+	{
 		if (!Multiplayer.IsServer())
 		{
 			return;
@@ -242,21 +259,27 @@ public partial class Main : Node
 		playerReady++;
 		if (playerReady == Players.Count)
 		{
-			Node level = GetNode("LevelContainer");
-			foreach (Node child in level.GetChildren())
-			{
-				level.RemoveChild(child);
-				child.QueueFree();
-			}
-
-			foreach (PlayerInfo playerInfo in Players.Values)
-			{
-				playerInfo.Score.Clear();
-				playerInfo.GameOver = false;
-				playerInfo.Role = PlayerInfo.PlayerRole.None;
-			}
+			ClearGame();
 			SendPlayerInfo(nameof(ShowLobby));
 			playerReady = 0;
+			endRoundExecuted = false;
+
+		}
+	}
+
+	public void ClearGame() {
+		Node level = GetNode("LevelContainer");
+		foreach (Node child in level.GetChildren())
+		{
+			level.RemoveChild(child);
+			child.QueueFree();
+		}
+
+		foreach (PlayerInfo playerInfo in Players.Values)
+		{
+			playerInfo.Score.Clear();
+			playerInfo.GameOver = false;
+			playerInfo.Role = PlayerInfo.PlayerRole.None;
 		}
 	}
 
@@ -264,8 +287,11 @@ public partial class Main : Node
 	public void ShowLobby()
 	{
 		GetTree().Paused = false;
-		GetNode<Control>("MultiplayerManager/MainMenu").Show();
-		GetNode<Control>("MultiplayerManager/Lobby").Show();
+		if (DisplayServer.GetName() != "headless")
+		{
+			GetNode<Control>("MultiplayerManager/MainMenu").Show();
+			GetNode<Control>("MultiplayerManager/Lobby").Show();
+		}
 	}
 
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
@@ -282,6 +308,7 @@ public partial class Main : Node
 			CallDeferred(nameof(ChangeLevel), ResourceLoader.Load<PackedScene>("res://Level.tscn"));
 			Rpc(nameof(UnpauseGame));
 			playerReady = 0;
+			endRoundExecuted = false;
 		}
 	}
 
@@ -296,4 +323,71 @@ public partial class Main : Node
 	{
 		GetTree().Paused = false;
 	}
+
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	public void CastGameModeVote(int gameModeId)
+	{
+		int playerId = Multiplayer.GetRemoteSenderId();
+		if (!Multiplayer.IsServer())
+		{
+			return;
+		}
+		// If the player has already voted, update their vote
+		if (playerVotes.ContainsKey(playerId))
+		{
+			playerVotes[playerId] = gameModeId;
+		}
+		// Otherwise, add a new vote for the player
+		else
+		{
+			playerVotes.Add(playerId, gameModeId);
+		}
+	}
+
+	public void GetMostVotedGameMode()
+	{
+		if (!Multiplayer.IsServer())
+		{
+			return;
+		}
+		
+		if (playerVotes.Count == 0)
+		{ 
+			RpcId(1,nameof(SetGameMode), 0);
+		}
+		else
+		{
+			int mostVotedGameModeID = 0;
+			// Count the votes for each game mode
+			Dictionary<int, int> modeCounts = new Dictionary<int, int>();
+			foreach (var vote in playerVotes)
+			{
+				int gameModeId = vote.Value;
+				if (modeCounts.ContainsKey(gameModeId))
+				{
+					modeCounts[gameModeId]++;
+				}
+				else
+				{
+					modeCounts.Add(gameModeId, 1);
+				}
+			}
+			// Find the game mode with the highest number of votes
+			mostVotedGameModeID = modeCounts.OrderByDescending(x => x.Value).First().Key;
+			Rpc(nameof(SetGameMode), mostVotedGameModeID);
+		}
+	}
+
+
+	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	public void SetGameMode(int mostVotedGameModeID)
+	{
+		GameMode =  GameModes.FirstOrDefault(gameMode => gameMode.Id == (GameModeId)mostVotedGameModeID);
+	}
+
+	public void ClearVotes()
+	{
+		playerVotes.Clear();
+	}
+
 }

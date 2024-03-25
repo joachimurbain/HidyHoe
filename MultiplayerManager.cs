@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using static Godot.Projection;
 
 public partial class MultiplayerManager : Node
 {
@@ -7,7 +8,7 @@ public partial class MultiplayerManager : Node
 	public int Port = 8910;
 	[Export]
 	public string Address = "127.0.0.1";
-	//private string Address = "151.80.43.66";
+	//public string Address = "151.80.43.66";
 
 	private ENetMultiplayerPeer peer;
 	private ENetConnection.CompressionMode compressionMode = ENetConnection.CompressionMode.RangeCoder;
@@ -33,13 +34,18 @@ public partial class MultiplayerManager : Node
 	private void HostGame()
 	{
 		//	FIXME: Cant reset hosting
-		//if(peer != null) 
-		//{
-		//	peer.Close();
-		//	peer = null;
-		//	Multiplayer.MultiplayerPeer.Close();
-		//	GetTree().SetMultiplayer(MultiplayerApi.CreateDefaultInterface());
-		//}
+		if (peer != null)
+		{
+			//peer.Close();
+			//peer = null;
+			//Multiplayer.MultiplayerPeer.Close();
+
+			//GetTree().ReloadCurrentScene();
+
+			//return;
+
+			//GetTree().SetMultiplayer(MultiplayerApi.CreateDefaultInterface());
+		}
 
 		peer = new ENetMultiplayerPeer();
 		Error error = peer.CreateServer(Port);
@@ -63,21 +69,43 @@ public partial class MultiplayerManager : Node
 		}
 	}
 
+
+
+
 	private void ConnectionFailed()
 	{
 		GD.Print("CONNECTION FAILED");
 	}
 
 
-	private void PeerDisconnected(long id)
+	private void PeerDisconnected(long playerId)
 	{
-		GD.Print("PEER DISCONECTED" + id.ToString());
+		GD.Print("PEER DISCONECTED" + playerId.ToString());
+
+		if (Multiplayer.IsServer())
+		{
+			mainNode.Players.Remove((int)playerId);
+
+			if(mainNode.Players.Count > 0)
+			{
+				mainNode.SendPlayerInfo();
+			}
+			else
+			{
+				GD.Print("Reseting Game");
+				mainNode.ClearGame();
+				GetTree().Paused = false;
+			}
+
+		}
+
+
 	}
 
 	private void ConnectedToServer()
 	{
-		AddLobby();
 		mainNode.SendPlayerInformation((FindChild("NameLineEdit") as LineEdit).Text, Multiplayer.GetUniqueId());
+		AddLobby();
 		GD.Print("Connected to Server!");
 	}
 

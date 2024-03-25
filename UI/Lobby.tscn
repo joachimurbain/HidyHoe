@@ -1,9 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://b3dn6wk54mlk4"]
+[gd_scene load_steps=3 format=3 uid="uid://b3dn6wk54mlk4"]
 
 [ext_resource type="Script" path="res://UI/Lobby.cs" id="1_ysvbr"]
 [ext_resource type="Theme" uid="uid://4f6g8umc5sa4" path="res://UI/Theme_1.tres" id="2_e8wl0"]
-[ext_resource type="Resource" uid="uid://dcy4n4eawdo57" path="res://GameModes/Bo3.tres" id="2_mg8ob"]
-[ext_resource type="Resource" uid="uid://bi3yujtfiqd63" path="res://GameModes/Bo5.tres" id="3_loof8"]
 
 [node name="Lobby" type="Control"]
 layout_mode = 3
@@ -13,7 +11,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ysvbr")
-gameModes = Array[Object]([ExtResource("2_mg8ob"), ExtResource("3_loof8")])
 
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1

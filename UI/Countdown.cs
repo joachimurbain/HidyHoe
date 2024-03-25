@@ -62,6 +62,6 @@ public partial class Countdown : Control
 
 	private void OnCountdownTimeout()
 	{
-		mainNode.EndRound(Globals.RoundOutcome.HiderVictory);
+		mainNode.RpcId(1, nameof(mainNode.EndRound),(int)Globals.RoundOutcome.HiderVictory);
 	}
 }

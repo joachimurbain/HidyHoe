@@ -50,7 +50,7 @@ public partial class Player : CharacterBody2D
 		Role = mainNode.Players[PlayerId].Role;
 		GetNode<Control>("HUD/Countdown").SetProcess(PlayerId == Multiplayer.GetUniqueId());
 		GetNode<Control>("HUD/RoundCounter").SetProcess(PlayerId == Multiplayer.GetUniqueId());
-		GetNode<Node2D>("CatchComponent").SetProcess(Role == PlayerInfo.PlayerRole.Seeker);
+		GetNode<Node>("CatchComponent").SetProcess(Role == PlayerInfo.PlayerRole.Seeker);
 	}
 
 
