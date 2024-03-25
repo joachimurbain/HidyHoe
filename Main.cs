@@ -374,6 +374,7 @@ public partial class Main : Node
 			}
 			// Find the game mode with the highest number of votes
 			mostVotedGameModeID = modeCounts.OrderByDescending(x => x.Value).First().Key;
+			modeCounts.Clear();
 			Rpc(nameof(SetGameMode), mostVotedGameModeID);
 		}
 	}

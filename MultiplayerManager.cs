@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Text.RegularExpressions;
 using static Godot.Projection;
 
 public partial class MultiplayerManager : Node
@@ -36,17 +37,9 @@ public partial class MultiplayerManager : Node
 		//	FIXME: Cant reset hosting
 		if (peer != null)
 		{
-			//peer.Close();
-			//peer = null;
-			//Multiplayer.MultiplayerPeer.Close();
-
-			//GetTree().ReloadCurrentScene();
-
-			//return;
-
-			//GetTree().SetMultiplayer(MultiplayerApi.CreateDefaultInterface());
+			peer.Close();
+			peer = null;
 		}
-
 		peer = new ENetMultiplayerPeer();
 		Error error = peer.CreateServer(Port);
 		if (error != Error.Ok)
@@ -54,7 +47,9 @@ public partial class MultiplayerManager : Node
 			GD.PrintErr($"ERROR CANNOT HOST! : {error.ToString()}");
 			return;
 		}
-		peer.Host.Compress(ENetConnection.CompressionMode.RangeCoder);
+
+
+		//peer.Host.Compress(ENetConnection.CompressionMode.RangeCoder);
 		Multiplayer.MultiplayerPeer = peer;
 		GD.Print("Waiting For Players!");
 		if (DisplayServer.GetName() != "headless")
